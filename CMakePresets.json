@@ -1,0 +1,36 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "CardSorter",
+            "displayName": "Clang 12.0.1 x86_64-pc-windows-msvc",
+            "description": "Using compilers: C = C:\\Program Files\\LLVM\\bin\\clang.exe, CXX = C:\\Program Files\\LLVM\\bin\\clang++.exe",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "generator": "Visual Studio 16 2019",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "C:\\Program Files\\LLVM\\bin\\clang.exe",
+                "CMAKE_CXX_COMPILER": "C:\\Program Files\\LLVM\\bin\\clang++.exe",
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                    "type": "FILEPATH"
+                }
+            }
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "Catch2Tests",
+            "configurePreset": "CardSorter",
+            "output": {"outputOnFailure": true},
+            "execution": {"noTestsAction": "error", "stopOnFailure": true}
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "CardSorter",
+            "configurePreset": "CardSorter"
+        }
+    ]
+}

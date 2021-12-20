@@ -9,20 +9,6 @@ pub struct Sensor {
     pub id: i64,
 }
 
-trait Analog {
-    fn get_min<T>(self) -> T;
-    fn get_max<T>(self) -> T;
-    
-}
-
-trait GetSensor {
-    fn get_value<T>(self) -> T;
-}
-
-trait SetSensor {
-    fn set_value<T>(self, value: T);
-}
-
 pub struct AnalogInput<T> {
     sensor: Sensor,
     value: T,
