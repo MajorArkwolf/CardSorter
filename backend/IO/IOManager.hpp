@@ -10,7 +10,6 @@ namespace IO {
         IOManager();
         void Setup();
         ~IOManager();
-        void Update();
         void Reset();
         MessageProtocol::Message HandleMessage(const MessageProtocol::Message& messageIn);
     private:

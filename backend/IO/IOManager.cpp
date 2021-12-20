@@ -62,8 +62,4 @@ namespace IO {
         }
         return MessageProtocol::Message();
     }
-
-    void IOManager::Update() {
-
-    }
 }
