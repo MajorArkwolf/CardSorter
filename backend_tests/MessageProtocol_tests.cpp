@@ -76,6 +76,19 @@ TEST_CASE("Message Object Tests", "[single-file]") {
                 REQUIRE((memcmp(cpyObj.GetData(), msgObj.GetData(), msgObj.GetNumberOfBytes())) == 0);
             }
         }
+        WHEN("A Message object is created from a MessageByteStream object") {
+            size_t amountToMalloc = 10;
+            byte* ptr = (byte*)malloc(amountToMalloc);
+            auto messageByteObj = MessageProtocol::MessageByteStream(amountToMalloc, ptr);
+            THEN("Message Object should deep copy the MessageByteStream object.") {
+                auto msgObj = MessageProtocol::Message(MessageProtocol::MessageType::CreateSensor, messageByteObj);
+                REQUIRE(msgObj.GetData() != nullptr);
+                REQUIRE(msgObj.GetMessageType() == MessageProtocol::MessageType::CreateSensor);
+                REQUIRE(msgObj.GetNumberOfBytes() == messageByteObj.GetNumberOfBytes());
+                REQUIRE(msgObj.GetData() != messageByteObj.GetByteStream());
+                REQUIRE((memcmp(msgObj.GetData(), messageByteObj.GetByteStream(), msgObj.GetNumberOfBytes())) == 0);
+            }
+        }
     }
 }
 
