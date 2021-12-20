@@ -23,4 +23,22 @@ namespace IO {
     int ServoMotor::GetLastPosition() {
         return m_servo->read();
     }
+
+    SensorMessageResponse HandleMessage(const SensorMessage& message) {
+        auto response = SensorMessageResponse();
+        switch (message.method.servoMotorMethod)
+        {
+        case ServoMotorMethods::Get:
+            response.data.integar = Get();
+            response.wasSuccessful = true;
+            break;
+        case ServoMotorMethods::Set:
+            Set(message.data.integar);
+            response.wasSuccessful = true;
+            break;
+        default:
+            break;
+        }
+        return response;
+    }
 }

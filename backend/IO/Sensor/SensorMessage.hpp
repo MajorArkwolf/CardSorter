@@ -5,7 +5,7 @@
 namespace IO {
     
     union Method {
-        ServoMotorMethods servoMethod;
+        ServoMotorMethods servoMotorMethod;
         PixelLightMethods pixelLightMethod;
         PhotoResistorMethods photoResistorMethod;
         Method();

@@ -16,4 +16,18 @@ namespace IO {
     void PhotoResistor::Setup() {
         pinMode(m_pin, INPUT);
     }
+
+    SensorMessageResponse PhotoResistor::HandleMessage(const SensorMessage& message) {
+        auto response = SensorMessageResponse();
+        switch (message.method.photoResistorMethod)
+        {
+        case PhotoResistorMethods::Get:
+            response.data.integar = Get();
+            response.wasSuccessful = true;
+            break;
+        default:
+            break;
+        }
+        return response;
+    }
 }
