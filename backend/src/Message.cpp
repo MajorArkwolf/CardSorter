@@ -1,5 +1,4 @@
 #include "Message.hpp"
-#include <algorithm>
 
 #ifdef _ARDUINO_
  #include <Arduino.h>
@@ -58,8 +57,19 @@ namespace MessageProtocol {
     }
 
     void MessageByteStream::Swap(MessageByteStream& lhs, MessageByteStream& rhs) {
-        std::swap(lhs.m_byteStream, rhs.m_byteStream);
-        std::swap(lhs.m_numberOfBytes, rhs.m_numberOfBytes);
+        MessageByteStream temp;
+        // lhs into temp
+        temp.m_byteStream = lhs.m_byteStream;
+        temp.m_numberOfBytes = lhs.m_numberOfBytes;
+        // rhs into lhs
+        lhs.m_byteStream = rhs.m_byteStream;
+        lhs.m_numberOfBytes = rhs.m_numberOfBytes;
+        // temp into rhs
+        rhs.m_byteStream = temp.m_byteStream;
+        rhs.m_numberOfBytes = temp.m_numberOfBytes;
+
+        temp.m_byteStream = nullptr;
+        temp.m_numberOfBytes = 0;
     }
 
     Message::Message() {

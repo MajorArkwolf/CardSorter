@@ -13,6 +13,8 @@ namespace IO {
         void Reset();
         MessageProtocol::Message HandleMessage(const MessageProtocol::Message& messageIn);
     private:
+        MessageProtocol::Message CreateSensorRequest(const MessageProtocol::Message& messageIn);
+        MessageProtocol::Message SensorInstructionRequest(const MessageProtocol::Message& messageIn);
         Container::Array<Sensor*> m_sensorArray;
     };
 }

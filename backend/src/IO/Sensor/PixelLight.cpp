@@ -22,13 +22,12 @@ namespace IO {
     void PixelLight::Show() {
         if (m_pixels != nullptr) {
             auto color = m_pixels->Color(m_color.red, m_color.green, m_color.blue);
-            auto outputColor = m_pixels->gamma32(m_pixels->ColorHSV(color, m_sat, m_brightness));
             m_pixels->fill(color, 0, 0);
             m_pixels->show();
         }
     }
 
-    SensorMessageResponse HandleMessage(const SensorMessage& message) {
+    SensorMessageResponse PixelLight::HandleMessage(const SensorMessage& message) {
         auto response = SensorMessageResponse();
         switch (message.method.pixelLightMethod)
         {

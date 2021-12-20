@@ -13,18 +13,18 @@ namespace IO {
 
     void ServoMotor::Setup() {
         m_servo = new Servo();
-        m_servo->attach(pin);
+        m_servo->attach(m_pin);
     }
 
-    void ServoMotor::SetPosition(int degrees) {
+    void ServoMotor::Set(int degrees) {
         m_servo->write(degrees);
     }
 
-    int ServoMotor::GetLastPosition() {
+    int ServoMotor::Get() {
         return m_servo->read();
     }
 
-    SensorMessageResponse HandleMessage(const SensorMessage& message) {
+    SensorMessageResponse ServoMotor::HandleMessage(const SensorMessage& message) {
         auto response = SensorMessageResponse();
         switch (message.method.servoMotorMethod)
         {
