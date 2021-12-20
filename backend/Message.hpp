@@ -20,7 +20,7 @@ namespace MessageProtocol {
         ~MessageByteStream();
         MessageByteStream(size_t numberOfBytes, byte* byteStream);
         MessageByteStream(const MessageByteStream& messageIn);
-        MessageByteStream operator=(const MessageByteStream& messageIn);
+        MessageByteStream& operator=(const MessageByteStream& messageIn);
         size_t GetNumberOfBytes() const;
         const byte* GetByteStream() const;
     private:

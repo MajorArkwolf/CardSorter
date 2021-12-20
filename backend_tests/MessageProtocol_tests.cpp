@@ -10,17 +10,29 @@ TEST_CASE("MessageByteStream Object Tests", "[single-file]") {
                 REQUIRE(defaultMsg.GetNumberOfBytes() == 0);
             }
         }
-        WHEN("A overloaded constructor is called with size_t and byte*.") {
+        WHEN("A overloaded constructor/assignment is called.") {
             size_t amountToMalloc = 10;
             byte* ptr = (byte*)malloc(amountToMalloc);
             auto alternateMsg = MessageProtocol::MessageByteStream(amountToMalloc, ptr);
-            THEN("It should shallow copy these values.") {
+            THEN("Alternative constructor with size_t and byte* is invoked, It should shallow copy these values.") {
                 REQUIRE(alternateMsg.GetByteStream() != nullptr);
                 REQUIRE(alternateMsg.GetByteStream() == ptr);
                 REQUIRE(alternateMsg.GetNumberOfBytes() == amountToMalloc);
             }
-            AND_THEN("If we attempt to copy construct said object, it should be deep copied.") {
-                
+            AND_THEN("Copy constructed object from said object should be deep copied.") {
+                auto cpyObj = MessageProtocol::MessageByteStream(alternateMsg);
+                REQUIRE(cpyObj.GetByteStream() != nullptr);
+                REQUIRE(cpyObj.GetByteStream() != ptr);
+                REQUIRE(memcmp(cpyObj.GetByteStream(), alternateMsg.GetByteStream(), alternateMsg.GetNumberOfBytes()) == 0);
+                REQUIRE(cpyObj.GetNumberOfBytes() == alternateMsg.GetNumberOfBytes());
+            }
+            AND_THEN("Copy assignment object from said object should be deep copied.") {
+                auto cpyAssignedObj = MessageProtocol::MessageByteStream();
+                cpyAssignedObj = alternateMsg;
+                REQUIRE(cpyAssignedObj.GetByteStream() != nullptr);
+                REQUIRE(cpyAssignedObj.GetByteStream() != ptr);
+                REQUIRE((memcmp(cpyAssignedObj.GetByteStream(), alternateMsg.GetByteStream(), alternateMsg.GetNumberOfBytes())) == 0);
+                REQUIRE(cpyAssignedObj.GetNumberOfBytes() == alternateMsg.GetNumberOfBytes());
             }
         }
     }

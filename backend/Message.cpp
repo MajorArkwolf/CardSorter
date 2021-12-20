@@ -28,22 +28,25 @@ namespace MessageProtocol {
         if (messageIn.GetByteStream() != nullptr) {
             this->m_byteStream = (byte*)malloc(messageIn.GetNumberOfBytes());
             if (this->m_byteStream != nullptr) {
-                memcpy(&this->m_byteStream, messageIn.GetByteStream(), messageIn.GetNumberOfBytes());
+                memcpy(this->m_byteStream, messageIn.GetByteStream(), messageIn.GetNumberOfBytes());
                 this->m_numberOfBytes = messageIn.GetNumberOfBytes();
             }
         }
     }
 
-    MessageByteStream MessageByteStream::operator=(const MessageByteStream& messageIn) {
+    MessageByteStream& MessageByteStream::operator=(const MessageByteStream& messageIn) {
+        m_numberOfBytes = 0;
+        m_byteStream = nullptr;
         if (messageIn.GetByteStream() != nullptr) {
             byte* byteStream = (byte*)malloc(messageIn.GetNumberOfBytes());
             if (byteStream != nullptr) {
                 memcpy(byteStream, messageIn.GetByteStream(), messageIn.GetNumberOfBytes());
                 auto numberOfBytes = messageIn.GetNumberOfBytes();
-                return MessageByteStream(numberOfBytes, byteStream);
+                m_byteStream = byteStream;
+                m_numberOfBytes = numberOfBytes;
             }
         }
-        return MessageByteStream();
+        return *this;
     }
 
     size_t MessageByteStream::GetNumberOfBytes() const {
