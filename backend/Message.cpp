@@ -14,7 +14,6 @@ namespace MessageProtocol {
 
     MessageByteStream::~MessageByteStream() {
         free(m_byteStream);
-        m_numberOfBytes = 0;
     }
 
     MessageByteStream::MessageByteStream(size_t numberOfBytes, byte* byteStream) {

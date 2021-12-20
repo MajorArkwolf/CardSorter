@@ -24,7 +24,6 @@ namespace IO {
     }
 
     MessageProtocol::Message IOManager::HandleMessage(const MessageProtocol::Message& messageIn) {
-        auto messageOut = MessageProtocol::Message();
         switch (messageIn.Type)
         {
         case MessageProtocol::MessageType::CreateSensor:
@@ -33,7 +32,7 @@ namespace IO {
                 auto sensor = Factory::CreateSensor(factoryMessage);
                 if (sensor != nullptr) {
                     m_sensorArray.Append(sensor);
-                    break;
+                    return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
                 }
             }
             break;
@@ -44,15 +43,15 @@ namespace IO {
                 if (sensor != nullptr) {
                     if (sensor->GetID() == sensorMessage.sensorID && sensor->GetSensorType() == sensorMessage.type) {
                         auto response = sensor->HandleMessage(sensorMessage);
-                        auto covnertedByteStream = MessageProtocol::GenericMessageToBytes(response);
-                        messageOut.
+                        auto convertedMessage = MessageProtocol::GenericMessageToBytes(response);
+                        return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, convertedMessage);
                     }
                 }
             }
             break;
         case MessageProtocol::MessageType::Reset:
             Reset();
-            messageOut.Type = MessageProtocol::MessageType::Acknowledge;
+            return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
             break;
         case MessageProtocol::MessageType::Emergency:
         case MessageProtocol::MessageType::Failure:
@@ -61,7 +60,7 @@ namespace IO {
         default:
             break;
         }
-        return messageOut;
+        return MessageProtocol::Message();
     }
 
     void IOManager::Update() {

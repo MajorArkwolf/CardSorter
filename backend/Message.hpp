@@ -62,7 +62,7 @@ namespace MessageProtocol {
     template<class T>
     T BytesToGenericMessage(const byte* byteMessage) {
         T message;
-        memcpy(&message,  byteMessage, sizeof(T));
+        memcpy(&message, byteMessage, sizeof(T));
         return message;
     }
 }
