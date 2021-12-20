@@ -14,16 +14,21 @@ namespace MessageProtocol {
         Failure
     };
 
-    struct MessageByteStream {
-        size_t numberOfBytes;
-        byte* byteStream;
+    class MessageByteStream {
+    public:
         MessageByteStream();
         ~MessageByteStream();
+        MessageByteStream(size_t numberOfBytes, byte* byteStream);
         MessageByteStream(const MessageByteStream& messageIn);
         MessageByteStream operator=(const MessageByteStream& messageIn);
+        size_t GetNumberOfBytes() const;
+        const byte* GetByteStream() const;
+    private:
+        size_t m_numberOfBytes;
+        byte* m_byteStream;
     };
 
-    struct Message {
+    class Message {
         MessageType Type;
         uint32_t NumberOfBytes;
         byte* Data;

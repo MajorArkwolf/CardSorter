@@ -8,37 +8,50 @@
 
 namespace MessageProtocol {
     MessageByteStream::MessageByteStream() {
-        numberOfBytes = 0;
-        byteStream = nullptr;
+        m_numberOfBytes = 0;
+        m_byteStream = nullptr;
     }
 
     MessageByteStream::~MessageByteStream() {
-        free(byteStream);
-        numberOfBytes = 0;
+        free(m_byteStream);
+        m_numberOfBytes = 0;
+    }
+
+    MessageByteStream::MessageByteStream(size_t numberOfBytes, byte* byteStream) {
+        m_numberOfBytes = numberOfBytes;
+        m_byteStream = byteStream;
     }
 
     MessageByteStream::MessageByteStream(const MessageByteStream& messageIn) {
-        this->numberOfBytes = 0;
-        this->byteStream = nullptr;
-        if (messageIn.byteStream != nullptr && messageIn.numberOfBytes > 0) {
-            this->byteStream = (byte*)malloc(messageIn.numberOfBytes);
-            if (this->byteStream != nullptr) {
-                memcpy(&this->byteStream, &messageIn.byteStream, messageIn.numberOfBytes);
-                this->numberOfBytes = messageIn.numberOfBytes;
+        this->m_numberOfBytes = 0;
+        this->m_byteStream = nullptr;
+        if (messageIn.GetByteStream() != nullptr && messageIn.GetNumberOfBytes() > 0) {
+            this->m_byteStream = (byte*)malloc(messageIn.GetNumberOfBytes());
+            if (this->m_byteStream != nullptr) {
+                memcpy(&this->m_byteStream, messageIn.GetByteStream(), messageIn.GetNumberOfBytes());
+                this->m_numberOfBytes = messageIn.GetNumberOfBytes();
             }
         }
     }
 
     MessageByteStream MessageByteStream::operator=(const MessageByteStream& messageIn) {
-        auto messageOut = MessageByteStream();
-        if (messageIn.byteStream != nullptr && messageIn.numberOfBytes > 0) {
-            messageOut.byteStream = (byte*)malloc(messageIn.numberOfBytes);
-            if (messageOut.byteStream != nullptr) {
-                memcpy(&messageOut.byteStream, &messageIn.byteStream, messageIn.numberOfBytes);
-                messageOut.numberOfBytes = messageIn.numberOfBytes;
+        if (messageIn.GetByteStream() != nullptr && messageIn.GetNumberOfBytes() > 0) {
+            byte* byteStream = (byte*)malloc(messageIn.GetNumberOfBytes());
+            if (byteStream != nullptr) {
+                memcpy(byteStream, messageIn.GetByteStream(), messageIn.GetNumberOfBytes());
+                auto numberOfBytes = messageIn.GetNumberOfBytes();
+                return MessageByteStream(numberOfBytes, byteStream);
             }
         }
-        return messageOut;
+        return MessageByteStream();
+    }
+
+    size_t MessageByteStream::GetNumberOfBytes() const {
+        return m_numberOfBytes;
+    }
+
+    const byte* MessageByteStream::GetByteStream() const {
+        return m_byteStream;
     }
 
     Message::Message() {
