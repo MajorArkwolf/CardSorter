@@ -13,13 +13,13 @@ TEST_CASE( "FactoryMessage Conversion", "[single-file]" ) {
         WHEN("FactoryMessageToBytes() is called") {
             auto messageStream = MessageProtocol::GenericMessageToBytes<IO::Factory::FactoryMessage>(message);
             THEN("The returned object should not be nullptr") {
-                REQUIRE(messageStream.byteStream != nullptr);
+                REQUIRE(messageStream.GetByteStream() != nullptr);
             }
             AND_THEN("The amount of bytes should be equal to the orginal object") {
-                REQUIRE(messageStream.numberOfBytes == sizeof(IO::Factory::FactoryMessage));
+                REQUIRE(messageStream.GetNumberOfBytes() == sizeof(IO::Factory::FactoryMessage));
             }
             WHEN("We call BytesToFactoryMessage() and convert it back...") {
-                auto convertedMessage = MessageProtocol::BytesToGenericMessage<IO::Factory::FactoryMessage>(messageStream.byteStream);
+                auto convertedMessage = MessageProtocol::BytesToGenericMessage<IO::Factory::FactoryMessage>(messageStream.GetByteStream());
                 THEN("The new message should contain the same contents as the old message") {
                     REQUIRE(message.Location == convertedMessage.Location);
                     REQUIRE(message.Type == convertedMessage.Type);

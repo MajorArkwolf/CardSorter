@@ -29,26 +29,32 @@ namespace MessageProtocol {
     };
 
     class Message {
-        MessageType Type;
-        uint32_t NumberOfBytes;
-        byte* Data;
-
+    public:
         Message();
         ~Message();
         Message(MessageType typeOfMessage, const MessageByteStream& payload);
+        Message(MessageType typeOfMessage, size_t numberOfBytes, byte* byteStream);
+        MessageType GetMessageType() const;
+        size_t GetNumberOfBytes() const;
+        const byte* GetData() const;
+
+        static Message BytesToMessage(const MessageByteStream& byteMessage);
+
+        MessageByteStream MessageToBytes();
+    private:
+        MessageType m_type;
+        size_t m_numberOfBytes;
+        byte* m_data;
     };
-
-    Message BytesToMessage(const byte* byteMessage);
-
-    MessageByteStream MessageToBytes(const Message& message);
 
     template<typename T>
     MessageByteStream GenericMessageToBytes(T message) {
-        auto mesageBytestream = MessageProtocol::MessageByteStream();
-        mesageBytestream.numberOfBytes = sizeof(T);
-        mesageBytestream.byteStream = (byte*)malloc(mesageBytestream.numberOfBytes);
-        memcpy(mesageBytestream.byteStream, &message, mesageBytestream.numberOfBytes);
-        return mesageBytestream;
+        size_t numberOfBytes = sizeof(T);
+        byte* byteStream = (byte*)malloc(numberOfBytes);
+        if (byteStream != nullptr) {
+            memcpy(byteStream, &message, numberOfBytes);
+        }
+        return MessageProtocol::MessageByteStream(numberOfBytes, byteStream);
     }
 
     template<class T>
