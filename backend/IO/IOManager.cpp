@@ -1,5 +1,6 @@
 #include "IOManager.hpp"
 #include "IOFactory.hpp"
+#include "Sensor/SensorMessage.hpp"
 
 namespace IO {
     IOManager::IOManager() {
@@ -37,11 +38,14 @@ namespace IO {
             }
             break;
         case MessageProtocol::MessageType::SensorInstruction:
+            auto sensorMessage = MessageProtocol::BytesToGenericMessage<SensorMessage>(messageIn.Data);
             for (unsigned i = 0; i < m_sensorArray.GetSize(); ++i) {
                 auto sensor = m_sensorArray.Get(i);
                 if (sensor != nullptr) {
-                    if (sensor->GetID() == 0 && sensor->GetSensorType() == ) {
-
+                    if (sensor->GetID() == sensorMessage.sensorID && sensor->GetSensorType() == sensorMessage.type) {
+                        auto response = sensor->HandleMessage(sensorMessage);
+                        auto covnertedByteStream = MessageProtocol::GenericMessageToBytes(response);
+                        messageOut.
                     }
                 }
             }

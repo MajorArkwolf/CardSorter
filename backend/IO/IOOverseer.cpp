@@ -2,8 +2,8 @@
 
 
 namespace IO {
-        IOOverseer::IOOverseer() {
-            
+        IOOverseer::IOOverseer() : m_idUniqueDistributor(0) {
+            m_sensorMapping = Container::Array<Sensor*>();
         }
         
         IOOverseer::~IOOverseer() {}

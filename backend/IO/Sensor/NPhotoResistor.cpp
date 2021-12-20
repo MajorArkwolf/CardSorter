@@ -6,7 +6,18 @@ namespace IO {
     }
 
     int NPhotoResistor::Get() {
-        return 0;
+        auto messageOut = SensorMessage(
+            m_id,
+            GetSensorType(),
+            Method(PhotoResistorMethods::Get),
+            SensorDataTypes()
+        );
+        // Send Message
+        auto response = SensorMessageResponse();
+        if (response.wasSuccessful) {
+            return response.data.integar;
+        }
+        return -1;
     }
 
     SensorMessageResponse NPhotoResistor::HandleMessage(const SensorMessage& message) {

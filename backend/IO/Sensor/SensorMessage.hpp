@@ -9,6 +9,9 @@ namespace IO {
         PixelLightMethods pixelLightMethod;
         PhotoResistorMethods photoResistorMethod;
         Method();
+        Method(ServoMotorMethods methodInvoking);
+        Method(PixelLightMethods methodInvoking);
+        Method(PhotoResistorMethods methodInvoking);
     };
 
     struct SensorMessage {
@@ -17,6 +20,7 @@ namespace IO {
         Method method;
         SensorDataTypes data;
         SensorMessage();
+        SensorMessage(int id, Definition::SensorType destType, Method methodInvoking, SensorDataTypes dataRequired);
     };
 
     struct SensorMessageResponse {

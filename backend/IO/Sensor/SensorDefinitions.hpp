@@ -18,6 +18,9 @@ namespace IO {
         int8_t integar;
         Shared::Color color;
         SensorDataTypes();
+        SensorDataTypes(const Shared::Color& newColor);
+        SensorDataTypes(bool newBoolean);
+        SensorDataTypes(int8_t newIntegar);
     };
     
     struct PhotoResitorData {
@@ -38,7 +41,7 @@ namespace IO {
         Show
     };
 
-        struct ServoMotorData {
+    struct ServoMotorData {
         int Pin;
     };
 
