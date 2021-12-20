@@ -29,6 +29,19 @@ namespace IO {
     }
 
     SensorMessageResponse HandleMessage(const SensorMessage& message) {
-
+        auto response = SensorMessageResponse();
+        switch (message.method.pixelLightMethod)
+        {
+        case PixelLightMethods::SetColor:
+            SetColor(message.data.color);
+            break;
+        case PixelLightMethods::Show:
+            Show();
+            response.wasSuccessful = true;
+            break;
+        default:
+            break;
+        }
+        return response;
     }
 }
