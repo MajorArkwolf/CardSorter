@@ -38,6 +38,47 @@ TEST_CASE("MessageByteStream Object Tests", "[single-file]") {
     }
 }
 
+TEST_CASE("Message Object Tests", "[single-file]") {
+    GIVEN( "When a Message object is created." ) {
+        
+        WHEN("A default version is constructed.") {
+            auto defaultMsg = MessageProtocol::Message();
+            THEN("It should contain default values") {
+                REQUIRE(defaultMsg.GetMessageType() == MessageProtocol::MessageType::Failure);
+                REQUIRE(defaultMsg.GetNumberOfBytes() == 0);
+                REQUIRE(defaultMsg.GetData() == nullptr);
+            }
+        }
+        WHEN("A overloaded constructor/assignment is called.") {
+            size_t amountToMalloc = 10;
+            byte* ptr = (byte*)malloc(amountToMalloc);
+            auto msgObj = MessageProtocol::Message(MessageProtocol::MessageType::CreateSensor, amountToMalloc, ptr);
+            THEN("A shallow copy should be performed") {
+                REQUIRE(msgObj.GetMessageType() == MessageProtocol::MessageType::CreateSensor);
+                REQUIRE(msgObj.GetNumberOfBytes() == amountToMalloc);
+                REQUIRE(msgObj.GetData() == ptr);
+            }
+            AND_THEN("Copy constructed object from said object should be deep copied.") {
+                auto cpyObj = MessageProtocol::Message(msgObj);
+                REQUIRE(cpyObj.GetData() != nullptr);
+                REQUIRE(cpyObj.GetMessageType() == msgObj.GetMessageType());
+                REQUIRE(cpyObj.GetNumberOfBytes() == msgObj.GetNumberOfBytes());
+                REQUIRE(cpyObj.GetData() != msgObj.GetData());
+                REQUIRE((memcmp(cpyObj.GetData(), msgObj.GetData(), msgObj.GetNumberOfBytes())) == 0);
+            }
+            AND_THEN("Copy assignment object from said object should be deep copied.") {
+                auto cpyObj = MessageProtocol::Message();
+                cpyObj = msgObj;
+                REQUIRE(cpyObj.GetData() != nullptr);
+                REQUIRE(cpyObj.GetMessageType() == msgObj.GetMessageType());
+                REQUIRE(cpyObj.GetNumberOfBytes() == msgObj.GetNumberOfBytes());
+                REQUIRE(cpyObj.GetData() != msgObj.GetData());
+                REQUIRE((memcmp(cpyObj.GetData(), msgObj.GetData(), msgObj.GetNumberOfBytes())) == 0);
+            }
+        }
+    }
+}
+
 TEST_CASE( "MessageProtocol Conversion", "[single-file]" ){
     GIVEN( "A Message with no payload ready to go." ) {
         auto message = MessageProtocol::Message(MessageProtocol::MessageType::CreateSensor, 0, nullptr);

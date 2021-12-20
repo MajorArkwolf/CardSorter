@@ -90,6 +90,37 @@ namespace MessageProtocol {
         m_data = byteStream;
     }
 
+    Message::Message(const Message& messageIn) {
+        if (messageIn.m_data != nullptr) {
+            this->m_data = (byte*)malloc(messageIn.m_numberOfBytes);
+            if (m_data != nullptr) {
+                memcpy(this->m_data, messageIn.m_data, messageIn.m_numberOfBytes);
+                this->m_numberOfBytes = messageIn.m_numberOfBytes;
+                this->m_type = messageIn.m_type;
+                return;
+            }
+        }
+        m_type = MessageType::Failure;
+        m_numberOfBytes = 0;
+        m_data = nullptr;
+    }
+
+    Message& Message::operator=(const Message& messageIn) {
+        if (messageIn.m_data != nullptr) {
+            this->m_data = (byte*)malloc(messageIn.m_numberOfBytes);
+            if (m_data != nullptr) {
+                memcpy(this->m_data, messageIn.m_data, messageIn.m_numberOfBytes);
+                this->m_numberOfBytes = messageIn.m_numberOfBytes;
+                this->m_type = messageIn.m_type;
+                return *this;
+            }
+        }
+        m_type = MessageType::Failure;
+        m_numberOfBytes = 0;
+        m_data = nullptr;
+        return *this;
+    }
+
     MessageType Message::GetMessageType() const {
         return m_type;
     }

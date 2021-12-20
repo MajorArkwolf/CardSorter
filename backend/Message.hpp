@@ -34,6 +34,8 @@ namespace MessageProtocol {
         ~Message();
         Message(MessageType typeOfMessage, const MessageByteStream& payload);
         Message(MessageType typeOfMessage, size_t numberOfBytes, byte* byteStream);
+        Message(const Message& messageIn);
+        Message& operator=(const Message& messageIn);
         MessageType GetMessageType() const;
         size_t GetNumberOfBytes() const;
         const byte* GetData() const;
