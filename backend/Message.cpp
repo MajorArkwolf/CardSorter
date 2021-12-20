@@ -1,4 +1,5 @@
 #include "Message.hpp"
+#include <algorithm>
 
 #ifdef _ARDUINO_
  #include <Arduino.h>
@@ -54,6 +55,11 @@ namespace MessageProtocol {
 
     const byte* MessageByteStream::GetByteStream() const {
         return m_byteStream;
+    }
+
+    void MessageByteStream::Swap(MessageByteStream& lhs, MessageByteStream& rhs) {
+        std::swap(lhs.m_byteStream, rhs.m_byteStream);
+        std::swap(lhs.m_numberOfBytes, rhs.m_numberOfBytes);
     }
 
     Message::Message() {
