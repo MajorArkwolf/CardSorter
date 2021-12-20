@@ -12,6 +12,51 @@ namespace MessageProtocol {
         byteStream = nullptr;
     }
 
+    MessageByteStream::~MessageByteStream() {
+        free(byteStream);
+        numberOfBytes = 0;
+    }
+
+    MessageByteStream::MessageByteStream(const MessageByteStream& messageIn) {
+        this->numberOfBytes = 0;
+        this->byteStream = nullptr;
+        if (messageIn.byteStream != nullptr && messageIn.numberOfBytes > 0) {
+            this->byteStream = (byte*)malloc(messageIn.numberOfBytes);
+            if (this->byteStream != nullptr) {
+                memcpy(&this->byteStream, &messageIn.byteStream, messageIn.numberOfBytes);
+                this->numberOfBytes = messageIn.numberOfBytes;
+            }
+        }
+    }
+
+    MessageByteStream MessageByteStream::operator=(const MessageByteStream& messageIn) {
+        auto messageOut = MessageByteStream();
+        if (messageIn.byteStream != nullptr && messageIn.numberOfBytes > 0) {
+            messageOut.byteStream = (byte*)malloc(messageIn.numberOfBytes);
+            if (messageOut.byteStream != nullptr) {
+                memcpy(&messageOut.byteStream, &messageIn.byteStream, messageIn.numberOfBytes);
+                messageOut.numberOfBytes = messageIn.numberOfBytes;
+            }
+        }
+        return messageOut;
+    }
+
+    Message::Message() {
+        Type = MessageType::Failure;
+        NumberOfBytes = 0;
+        Data = nullptr;
+    }
+
+    Message::~Message() {
+        Type = MessageType::Failure;
+        NumberOfBytes = 0;
+        free(Data);
+    }
+
+    Message::Message(MessageType typeOfMessage, const MessageByteStream& payload) {
+
+    }
+
     Message BytesToMessage(const byte* byteMessage) {
         size_t offset = 0;
         auto output = Message();

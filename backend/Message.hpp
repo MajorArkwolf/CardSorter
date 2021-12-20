@@ -14,22 +14,23 @@ namespace MessageProtocol {
         Failure
     };
 
+    struct MessageByteStream {
+        size_t numberOfBytes;
+        byte* byteStream;
+        MessageByteStream();
+        ~MessageByteStream();
+        MessageByteStream(const MessageByteStream& messageIn);
+        MessageByteStream operator=(const MessageByteStream& messageIn);
+    };
+
     struct Message {
         MessageType Type;
         uint32_t NumberOfBytes;
         byte* Data;
 
-        Message() {
-            Type = MessageType::Failure;
-            NumberOfBytes = 0;
-            Data = nullptr;
-        }
-    };
-
-    struct MessageByteStream {
-        size_t numberOfBytes;
-        byte* byteStream;
-        MessageByteStream();
+        Message();
+        ~Message();
+        Message(MessageType typeOfMessage, const MessageByteStream& payload);
     };
 
     Message BytesToMessage(const byte* byteMessage);
