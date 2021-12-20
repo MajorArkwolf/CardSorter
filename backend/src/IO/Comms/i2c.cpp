@@ -39,10 +39,15 @@ namespace Comm {
     bool i2c::Send(const int address, const MessageProtocol::MessageByteStream& payload) {
         Wire.beginTransmission(address);
         Wire.write(payload.GetByteStream(), payload.GetNumberOfBytes());
+        Wire.endTransmission();
     }
 
     MessageProtocol::MessageByteStream i2c::Recieve() {
-        return MessageProtocol::MessageByteStream();
+        auto messageOut = MessageProtocol::MessageByteStream();
+        if (messageContainer.HoldingRecieveMessage()) {
+            messageContainer.GetRecvMessage(messageOut);
+        }
+        return messageOut;
     }
 
     void i2c::OnRequestHandle() {
