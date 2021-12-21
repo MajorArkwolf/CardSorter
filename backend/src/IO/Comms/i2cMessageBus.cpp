@@ -5,7 +5,9 @@ namespace Comm {
         m_send(),
         m_holdingRecieveMessage(false),
         m_holdingSendMessage(false)
-        {}
+        {
+            m_messageHandler = nullptr;
+        }
 
     bool i2cMessageBus::HoldingRecieveMessage() {
         return m_holdingRecieveMessage;
