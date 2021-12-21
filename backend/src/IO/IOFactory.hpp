@@ -13,20 +13,13 @@ namespace IO {
             Unknown
         };
 
-        union SensorData
-        {
-            NSensor networkSensor;
-            PhotoResitorData photoResitorData;
-            ServoMotorData servoMotorData;
-            PixelLightData pixelLightData;
-            SensorData();
-        };
-
         struct FactoryMessage {
             SensorLocation Location;
             Definition::SensorType Type;
-            int ID;
-            SensorData Data;
+            SensorID ID;
+            SensorInitData Data;
+            FactoryMessage();
+            FactoryMessage(SensorLocation location, Definition::SensorType type, SensorID id, SensorInitData data);
         };
 
         Sensor* CreateSensor(const FactoryMessage& message);

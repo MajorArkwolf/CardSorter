@@ -4,13 +4,6 @@
 #include "SensorMessage.hpp"
 
 namespace IO {
-
-    struct NSensor {
-        int BoardID;
-        NSensor() : BoardID(0) {}
-        NSensor(int boardID) : BoardID(boardID) {}
-    };
-
     class Sensor {
     public:
         Sensor(int id) : m_id(id) {}

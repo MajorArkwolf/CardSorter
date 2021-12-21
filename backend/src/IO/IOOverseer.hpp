@@ -6,11 +6,25 @@
 
 namespace IO {
     class IOOverseer {
+        class SensorIDDistributor {
+        private:
+            IO::SensorID m_idUniqueDistributor;
+        public:
+            SensorIDDistributor() : m_idUniqueDistributor(0) {}
+            IO::SensorID GetNewUniqueID() { return m_idUniqueDistributor++; }
+        };
+
+    public:
         IOOverseer();
         ~IOOverseer();
+        void Setup();
+        void Update();
 
     private:
-        uint8_t m_idUniqueDistributor;
+        void RegisterSensor(int boardAddress, Definition::SensorType type, SensorInitData data);
+
+        SensorIDDistributor m_sensorIDDistributor;
+        
         Container::Array<Sensor*> m_sensorMapping;
     };
 }

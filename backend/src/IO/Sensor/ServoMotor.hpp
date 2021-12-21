@@ -14,8 +14,8 @@ namespace IO {
         void Set(int degrees) override;
         int Get() override;
         SensorMessageResponse HandleMessage(const SensorMessage& message) override;
-    private:
-        Servo* m_servo;
+    protected:
         int m_pin;
+        Servo* m_servo;    
     };
 }

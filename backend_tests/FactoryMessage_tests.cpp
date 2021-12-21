@@ -1,6 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../backend/Message.hpp"
-#include "../backend/IO/IOFactory.hpp"
+#include "../backend/src/Message.hpp"
+#include "../backend/src/IO/IOFactory.hpp"
 
 
 TEST_CASE( "FactoryMessage Conversion", "[single-file]" ) {

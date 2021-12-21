@@ -15,6 +15,7 @@
 #include "Sensor/PixelLight.hpp"
 #include "Sensor/ServoMotor.hpp"
 #include "Sensor/PhotoResistor.hpp"
+#include "Sensor/DeattachedServoMotor.hpp"
 #endif
 
 namespace {
@@ -35,6 +36,9 @@ namespace {
             sensor = new IO::ServoMotor(message.ID, message.Data.servoMotorData);
             sensor->Setup();
             break;
+        case IO::Definition::SensorType::DeattachedServoMotor:
+            sensor = new IO::DeattachedServoMotor(message.ID, message.Data.servoMotorData);
+            sensor->Setup();
         #endif
         default:
             break;
@@ -53,6 +57,7 @@ namespace {
         case IO::Definition::SensorType::PhotoResistor:
             sensor = new IO::NPhotoResistor(message.ID, nSensor.BoardID);
             break;
+        case IO::Definition::SensorType::DeattachedServoMotor:
         case IO::Definition::SensorType::ServoMotor:
             sensor = new IO::NServoMotor(message.ID, nSensor.BoardID);
             break;
@@ -65,11 +70,6 @@ namespace {
 
 namespace IO { 
     namespace Factory {
-
-        SensorData::SensorData() { 
-            memset( this, 0, sizeof( SensorData ) ); 
-        }
-
         Sensor* CreateSensor(const FactoryMessage& message) {
             Sensor* sensor = nullptr;
             switch (message.Location)
@@ -84,6 +84,18 @@ namespace IO {
                 break;
             }
             return sensor;
+        }
+        FactoryMessage::FactoryMessage() {
+            Location = SensorLocation::Unknown;
+            Type = Definition::SensorType::None;
+            ID = 0;
+            Data = SensorInitData();
+        }
+        FactoryMessage::FactoryMessage(SensorLocation location, Definition::SensorType type, SensorID id, SensorInitData data) {
+            Location = location;
+            Type = type;
+            ID = id;
+            Data = data;
         }
     }
 }

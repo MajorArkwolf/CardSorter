@@ -17,4 +17,22 @@ namespace IO {
     SensorDataTypes::SensorDataTypes(int8_t newIntegar) {
         this->integar = newIntegar;
     }
+
+    SensorInitData::SensorInitData() { 
+        memset( this, 0, sizeof( SensorInitData ) ); 
+    }
+
+    SensorInitData::SensorInitData(NSensor data) {
+        this->networkSensor = data;
+    }
+    SensorInitData::SensorInitData(PhotoResitorData data) {
+        this->photoResitorData = data;
+    }
+    SensorInitData::SensorInitData(ServoMotorData data) {
+        this->servoMotorData = data;
+    }
+    SensorInitData::SensorInitData(PixelLightData data) {
+        this->pixelLightData = data;
+    }
+
 }

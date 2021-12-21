@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../backend/Message.hpp"
+#include "../backend/src/Message.hpp"
 
 TEST_CASE("MessageByteStream Object Tests", "[single-file]") {
     GIVEN( "When a MessageByteStream object is created." ) {

@@ -15,17 +15,18 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 # Configure our test executables
 
-add_executable(MessageProtocolList backend_tests/MessageProtocol_tests.cpp backend/Message.cpp)
+add_executable(MessageProtocolList backend_tests/MessageProtocol_tests.cpp 
+backend/src/Message.cpp)
 list(APPEND PROJECT_LIST MessageProtocolList)
 
 add_executable(FactoryMessageTests backend_tests/FactoryMessage_tests.cpp
-  backend/Message.cpp
-  backend/IO/IOFactory.cpp
-  backend/IO/Sensor/SensorDefinitions.cpp
-  backend/IO/Sensor/SensorMessage.cpp
-  backend/IO/Sensor/NPhotoResistor.cpp
-  backend/IO/Sensor/NServoMotor.cpp
-  backend/IO/Sensor/NPixelLight.cpp)
+  backend/src/Message.cpp
+  backend/src/IO/IOFactory.cpp
+  backend/src/IO/Sensor/SensorDefinitions.cpp
+  backend/src/IO/Sensor/SensorMessage.cpp
+  backend/src/IO/Sensor/NPhotoResistor.cpp
+  backend/src/IO/Sensor/NServoMotor.cpp
+  backend/src/IO/Sensor/NPixelLight.cpp)
 list(APPEND PROJECT_LIST FactoryMessageTests)
 
 foreach( name ${PROJECT_LIST} )

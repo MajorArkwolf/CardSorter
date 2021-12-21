@@ -1,25 +1,26 @@
 #include "src/IO/Comms/i2c.hpp"
 #include "src/BoardDefinitions.hpp"
+#include "src/IO/IOOverseer.hpp"
+#include "src/IO/Sensor/ServoMotor.hpp"
 //#define BOARD_TYPE DRIVER_BOARD
 #define BOARD_TYPE DRIVER_BOARD
 #define ACTIVE_BOARD BOARD_1
 
-Comm::i2c comm(0);
+//Comm::i2c comm(0);
+IO::IOOverseer* overseer;
 #if BOARD_TYPE == DRIVER_BOARD
 void setup()
 {
-    comm.Connect();
+    overseer = new IO::IOOverseer();
+    //comm.Connect();
+    overseer->Setup();
+    Serial.begin(9600);
 }
 
 void loop()
 {
-    delay(5000);
-    size_t dataSize = sizeof(char) * 5;
-    byte* charData = (byte*)malloc(dataSize);
-    memcpy(charData, "test\0", dataSize);
-    auto message = MessageProtocol::MessageByteStream(dataSize, charData);
-    comm.Send(1, message);
-	delay(5000);
+    delay(1000);
+    overseer->Update();
 }
 #endif
 
