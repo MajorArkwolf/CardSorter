@@ -1,27 +1,38 @@
 #pragma once
 #include "IComm.hpp"
 
-namespace Comm {
-    enum class CommType {
-        Driver,
-        Passenger
-    };
+namespace IO {
+    class IOManager;
+}
 
-    class i2c : public IComm {
+namespace Comm {
+    class i2cDriver : public IComm {
     public:
-        i2c(int address);
-        ~i2c() override;
+        i2cDriver();
+        ~i2cDriver() override;
         bool Connect() override;
         void Disconnect() override;
         bool Send(const int address, const MessageProtocol::MessageByteStream& payload) override;
         MessageProtocol::MessageByteStream Recieve() override;
+    private:
+        int m_lastSendAddress;
+        bool m_isConnected;
+    };
 
+    class i2cPassenger : public IComm {
+    public:
+        i2cPassenger(int address);
+        ~i2cPassenger() override;
+        bool Connect() override;
+        void Disconnect() override;
+        bool Send(const int address, const MessageProtocol::MessageByteStream& payload) override;
+        MessageProtocol::MessageByteStream Recieve() override;
+        bool MessagePending();
         static void OnRequestHandle();
         static void OnRecieveHandle(int numBytes);
-
+        static void SetMessanger(IO::IOManager* manager);
     private:
         int m_address;
-        CommType m_commType;
         bool m_isConnected;
     };
 }
