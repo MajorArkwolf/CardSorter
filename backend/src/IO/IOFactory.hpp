@@ -1,4 +1,5 @@
 #pragma once
+#include "Comms/IComm.hpp"
 #include "../Message.hpp"
 #include "Sensor/Sensor.hpp"
 #include "Sensor/IPixelLight.hpp"
@@ -22,6 +23,15 @@ namespace IO {
             FactoryMessage(SensorLocation location, Definition::SensorType type, SensorID id, SensorInitData data);
         };
 
-        Sensor* CreateSensor(const FactoryMessage& message);
+        class IOFactory {
+        public:
+            IOFactory();
+            IOFactory(Comm::IComm* networkModule);
+            Sensor* CreateSensor(const FactoryMessage& message);
+        private:
+            IO::Sensor* CreateLocalSensor(const FactoryMessage& message);
+            IO::Sensor* CreateNetworkSensor(const FactoryMessage& message);
+            Comm::IComm* m_networkModule;
+        };
     }
 }
