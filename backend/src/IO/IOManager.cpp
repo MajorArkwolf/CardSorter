@@ -3,8 +3,11 @@
 #include "Sensor/SensorMessage.hpp"
 
 namespace IO {
-    IOManager::IOManager() {
+    IOManager::IOManager(int thisBoardID) :
+    i2c(thisBoardID)
+    {
         m_sensorArray = Container::Array<Sensor*>();
+        Comm::i2cPassenger::SetMessanger(this);
     }
 
     IOManager::~IOManager() {
@@ -12,7 +15,23 @@ namespace IO {
     }
 
     void IOManager::Setup() {
+        i2c.Connect();
+    }
 
+    void IOManager::Update() {
+        //if (i2c.MessagePending()) {
+        //    Serial.println("Step 1");
+        //    auto recv = i2c.Recieve();
+        //    if (recv.GetByteStream() != nullptr) {
+        //        Serial.println("Step 2");
+        //        auto message = MessageProtocol::Message::BytesToMessage(recv);
+        //        auto messageOut = HandleMessage(message);
+        //        auto output = messageOut.MessageToBytes();
+        //        Serial.println("Step 3");
+        //        i2c.Send(0, output);
+        //        Serial.println("Step 4");
+        //    }
+        //}
     }
 
     void IOManager::Reset() {
@@ -46,7 +65,8 @@ namespace IO {
     MessageProtocol::Message IOManager::CreateSensorRequest(const MessageProtocol::Message& messageIn) {
         auto factoryMessage = MessageProtocol::BytesToGenericMessage<IO::Factory::FactoryMessage>(messageIn.GetData());
         if (factoryMessage.Type != Definition::SensorType::None) {
-            auto sensor = Factory::CreateSensor(factoryMessage);
+            auto factory = Factory::IOFactory();
+            auto sensor = factory.CreateSensor(factoryMessage);
             if (sensor != nullptr) {
                 m_sensorArray.Append(sensor);
                 return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());

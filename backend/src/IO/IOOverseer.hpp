@@ -2,7 +2,7 @@
 #include "Sensor/Sensor.hpp"
 #include "../Array.hpp"
 #include "IOManager.hpp"
-
+#include "Comms/i2c.hpp"
 
 namespace IO {
     class IOOverseer {
@@ -24,7 +24,7 @@ namespace IO {
         void RegisterSensor(int boardAddress, Definition::SensorType type, SensorInitData data);
 
         SensorIDDistributor m_sensorIDDistributor;
-        
+        Comm::i2cDriver i2c;
         Container::Array<Sensor*> m_sensorMapping;
     };
 }
