@@ -14,7 +14,7 @@ namespace IO {
         this->boolean = newBoolean;
     }
 
-    SensorDataTypes::SensorDataTypes(int8_t newIntegar) {
+    SensorDataTypes::SensorDataTypes(int newIntegar) {
         this->integar = newIntegar;
     }
 

@@ -3,6 +3,10 @@
 #include "ServoMotor.hpp"
 #include <Servo.h>
 
+#ifdef degrees
+    #undef degrees
+#endif
+
 namespace {
     /**
      * @brief A helper function based on the time an average stepper motor takes to move X degrees.

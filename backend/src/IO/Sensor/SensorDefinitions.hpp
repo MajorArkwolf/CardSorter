@@ -51,12 +51,12 @@ namespace IO {
     union SensorDataTypes
     {
         bool boolean;
-        int8_t integar;
+        int integar;
         Shared::Color color;
         SensorDataTypes();
         SensorDataTypes(const Shared::Color& newColor);
         SensorDataTypes(bool newBoolean);
-        SensorDataTypes(int8_t newIntegar);
+        SensorDataTypes(int newIntegar);
     };
 
     union SensorInitData
