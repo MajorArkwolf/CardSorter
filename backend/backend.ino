@@ -2,8 +2,8 @@
 #include "src/BoardDefinitions.hpp"
 #include "src/IO/IOFactory.hpp"
 
-//#define BOARD_TYPE PASSENGER_BOARD
-#define BOARD_TYPE DRIVER_BOARD
+#define BOARD_TYPE PASSENGER_BOARD
+//#define BOARD_TYPE DRIVER_BOARD
 #define ACTIVE_BOARD BOARD_1
 
 #if BOARD_TYPE == DRIVER_BOARD
@@ -20,6 +20,7 @@ void setup()
 
 void loop()
 {
+    delay(2000);
     overseer.Update();
 }
 #endif

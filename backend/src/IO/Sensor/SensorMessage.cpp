@@ -36,4 +36,8 @@ namespace IO {
         wasSuccessful = false;
         data = SensorDataTypes();
     }
+
+    SensorMessageResponse::SensorMessageResponse(bool successful, SensorDataTypes dataIn) : 
+    wasSuccessful(successful), 
+    data(dataIn) {}
 }

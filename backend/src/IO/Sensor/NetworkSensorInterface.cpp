@@ -12,7 +12,7 @@ namespace IO {
         m_comm->Send(m_address, messageOut);
         auto payloadRecv = MessageProtocol::Message::BytesToMessage(m_comm->Recieve());
         if (payloadRecv.GetMessageType() == MessageProtocol::MessageType::Acknowledge) {
-            auto output = MessageProtocol::BytesToGenericMessage<SensorMessageResponse>(payloadRecv.GetData());
+            output = MessageProtocol::BytesToGenericMessage<SensorMessageResponse>(payloadRecv.GetData());
         }
         return output;
     }

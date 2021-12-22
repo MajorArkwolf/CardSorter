@@ -36,6 +36,16 @@ add_executable(SensorMessageTests backend_tests/SensorMessaging_tests.cpp
   backend/src/IO/Sensor/SensorDefinitions.cpp
 )
 list(APPEND PROJECT_LIST SensorMessageTests)
+add_executable(SensorMessageExtendedTests backend_tests/SensorMessageExtended_tests.cpp 
+  backend/src/Message.cpp
+  backend/src/IO/Sensor/SensorMessage.cpp
+  backend/src/IO/Sensor/SensorDefinitions.cpp
+  backend/src/IO/Sensor/NetworkSensorInterface.cpp
+  backend/src/IO/Sensor/NPhotoResistor.cpp
+  backend_tests/MockObjects/MockComm.cpp
+  backend_tests/MockObjects/MockPhotoResistor.cpp
+)
+list(APPEND PROJECT_LIST SensorMessageExtendedTests)
 
 foreach( name ${PROJECT_LIST} )
   message(${name})

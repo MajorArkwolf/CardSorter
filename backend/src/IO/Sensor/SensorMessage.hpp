@@ -27,5 +27,6 @@ namespace IO {
         bool wasSuccessful;
         SensorDataTypes data;
         SensorMessageResponse();
+        SensorMessageResponse(bool successful, SensorDataTypes dataIn);
     };
 }
