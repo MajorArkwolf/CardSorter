@@ -154,7 +154,7 @@ namespace MessageProtocol {
             payloadByteSize = 0;
         }
         // We dont want our pointer for our payload to be part of the bytestream and only its contents.
-        size_t numberOfBytes = (sizeof(Message) - sizeof(byte*)) + payloadByteSize;
+        size_t numberOfBytes = MessageSize + payloadByteSize;
         byte* outputByteStream = (byte*)malloc(numberOfBytes);
 
         if (outputByteStream != nullptr) {

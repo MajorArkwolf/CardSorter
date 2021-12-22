@@ -44,11 +44,14 @@ namespace MessageProtocol {
         static Message BytesToMessage(const MessageByteStream& byteMessage);
 
         MessageByteStream MessageToBytes();
+
     private:
         MessageType m_type;
         size_t m_numberOfBytes;
         byte* m_data;
     };
+
+    constexpr size_t MessageSize = sizeof(Message) - sizeof(byte*);
 
     template<typename T>
     MessageByteStream GenericMessageToBytes(T message) {
