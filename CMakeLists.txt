@@ -26,11 +26,33 @@ add_executable(FactoryMessageTests backend_tests/FactoryMessage_tests.cpp
   backend/src/IO/Sensor/SensorMessage.cpp
   backend/src/IO/Sensor/NPhotoResistor.cpp
   backend/src/IO/Sensor/NServoMotor.cpp
-  backend/src/IO/Sensor/NPixelLight.cpp)
+  backend/src/IO/Sensor/NPixelLight.cpp
+  backend/src/IO/Sensor/NetworkSensorInterface.cpp)
 list(APPEND PROJECT_LIST FactoryMessageTests)
+
+add_executable(SensorMessageTests backend_tests/SensorMessaging_tests.cpp 
+  backend/src/Message.cpp
+  backend/src/IO/Sensor/SensorMessage.cpp
+  backend/src/IO/Sensor/SensorDefinitions.cpp
+)
+list(APPEND PROJECT_LIST SensorMessageTests)
 
 foreach( name ${PROJECT_LIST} )
   message(${name})
+  # Set compile flags.
+  target_compile_options(${name} PRIVATE
+    # Clang
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+        -Weverything -fcolor-diagnostics
+        # Disable specific warnings.
+        -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
+        -Wno-deprecated-declarations -Wno-exit-time-destructors
+        -Wno-switch-enum -Wno-weak-vtables -Wno-global-constructors>
+    # GCC
+    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic -fdiagnostics-color=always>
+    # Visual Studio
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+  )
   target_link_libraries(${name} PRIVATE Catch2::Catch2 Catch2::Catch2WithMain)
   set_target_properties(${name} PROPERTIES
       CXX_STANDARD 11
