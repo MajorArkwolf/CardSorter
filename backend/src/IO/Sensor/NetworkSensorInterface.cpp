@@ -8,7 +8,12 @@ namespace IO {
 
     SensorMessageResponse NetworkSensorInterface::SendAndRecieveMessage(const SensorMessage& message) {
         auto messageOut = MessageProtocol::Message(MessageProtocol::MessageType::SensorInstruction, MessageProtocol::GenericMessageToBytes(message)).MessageToBytes();
+        auto output = SensorMessageResponse();
         m_comm->Send(m_address, messageOut);
-        auto messageIn = MessageProtocol::BytesToGenericMessage<SensorMessageResponse>(m_comm->Recieve().GetByteStream());
+        auto payloadRecv = MessageProtocol::Message::BytesToMessage(m_comm->Recieve());
+        if (payloadRecv.GetMessageType() == MessageProtocol::MessageType::Acknowledge) {
+            auto output = MessageProtocol::BytesToGenericMessage<SensorMessageResponse>(payloadRecv.GetData());
+        }
+        return output;
     }
 }

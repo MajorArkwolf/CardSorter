@@ -1,3 +1,4 @@
+#pragma once
 #include "../Comms/IComm.hpp"
 #include "SensorMessage.hpp"
 
