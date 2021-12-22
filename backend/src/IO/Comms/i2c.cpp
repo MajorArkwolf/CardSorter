@@ -51,6 +51,7 @@ namespace Comm {
     }
 
     void i2cPassenger::OnRequestHandle() {
+        Serial.println("Message Out");
         auto messageIn = MessageProtocol::MessageByteStream();
         if (messageContainer.HoldingRecieveMessage()) {
             messageContainer.GetRecvMessage(messageIn);
@@ -69,6 +70,7 @@ namespace Comm {
     }
 
     void i2cPassenger::OnRecieveHandle(int howMany) {
+        Serial.println("Message In");
         size_t bytesIn = howMany;
         size_t offset = 0;
         byte* data = (byte*)malloc(bytesIn);
@@ -128,21 +130,21 @@ namespace Comm {
                     break;
                 }
                 mes[offset] = Wire.read();
-                Serial.println(numberOfBytes);
                 ++offset;
             }
-            payLoad = (byte*)malloc(numberOfBytes);
-            Serial.println(numberOfBytes);
-            if (payLoad != nullptr) {
-                offset = 0;
-                Wire.requestFrom(m_lastSendAddress, numberOfBytes);
-                while(Wire.available())    // slave may send less than requested
-                {
-                    payLoad[offset] = Wire.read();
-                    ++offset;
+            if (numberOfBytes > 0) {
+                payLoad = (byte*)malloc(numberOfBytes);
+                if (payLoad != nullptr) {
+                    offset = 0;
+                    Wire.requestFrom(m_lastSendAddress, numberOfBytes);
+                    while(Wire.available())    // slave may send less than requested
+                    {
+                        payLoad[offset] = Wire.read();
+                        ++offset;
+                    }
+                } else {
+                    numberOfBytes = 0;
                 }
-            } else {
-                numberOfBytes = 0;
             }
         }
         auto messageOut = MessageProtocol::MessageByteStream(numberOfBytes, payLoad);
