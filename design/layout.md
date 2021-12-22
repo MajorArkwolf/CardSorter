@@ -71,7 +71,7 @@ All parts of this project should be able to be configured in an json object and 
 ## Hardware
 - 1x Raspberry Pi
 - 1x Compatiable Camera
-- 1x Arduino
+- 3x Arduino
 - 2-4x White LEDs
 - 4x Photovoltic sensors
 - 3x buttons (kill switch, continue switch, pause switch)
