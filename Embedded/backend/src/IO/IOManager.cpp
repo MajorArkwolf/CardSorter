@@ -29,11 +29,9 @@ namespace IO {
     }
 
     MessageProtocol::Message IOManager::HandleMessage(const MessageProtocol::Message& messageIn) {
-        Serial.println("Message in");
         switch (messageIn.GetMessageType())
         {
         case MessageProtocol::MessageType::CreateSensor:
-            Serial.println("creating sensor");
             return CreateSensorRequest(messageIn);
         case MessageProtocol::MessageType::SensorInstruction:
             return SensorInstructionRequest(messageIn);

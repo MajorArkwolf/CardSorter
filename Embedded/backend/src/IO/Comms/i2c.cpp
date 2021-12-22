@@ -51,7 +51,6 @@ namespace Comm {
     }
 
     void i2cPassenger::OnRequestHandle() {
-        Serial.println("Message Out");
         auto messageIn = MessageProtocol::MessageByteStream();
         if (messageContainer.HoldingRecieveMessage()) {
             messageContainer.GetRecvMessage(messageIn);
@@ -70,7 +69,6 @@ namespace Comm {
     }
 
     void i2cPassenger::OnRecieveHandle(int howMany) {
-        Serial.println("Message In");
         size_t bytesIn = howMany;
         size_t offset = 0;
         byte* data = (byte*)malloc(bytesIn);

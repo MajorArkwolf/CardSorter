@@ -24,16 +24,10 @@ namespace IO {
                     if (type == Definition::SensorType::ServoMotor) {
                         IServoMotor *servo = (IServoMotor*)sensor;
                         int lastPos = servo->Get();
-                        Serial.print("Servo Last Value: ");
-                        Serial.print(lastPos);
                         auto newPos = lastPos + 20;
                         if (newPos > 180) {
                             newPos = 0;
                         }
-                        Serial.print(" Servo Next Value: ");
-                        Serial.print(newPos);
-                        Serial.println();
-                        servo->Set(newPos);
                     }
                 }
             }

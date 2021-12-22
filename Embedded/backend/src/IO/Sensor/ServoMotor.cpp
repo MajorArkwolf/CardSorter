@@ -30,16 +30,10 @@ namespace IO {
         {
         case ServoMotorMethods::Get:
             response.data.integar = Get();
-            Serial.print("Get: ");
-            Serial.print(response.data.integar);
-            Serial.println();
             response.wasSuccessful = true;
             break;
         case ServoMotorMethods::Set:
             Set(message.data.integar);
-            Serial.print("Set: ");
-            Serial.print(message.data.integar);
-            Serial.println();
             response.wasSuccessful = true;
             break;
         default:
