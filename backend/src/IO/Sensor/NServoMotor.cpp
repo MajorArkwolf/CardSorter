@@ -31,7 +31,7 @@ namespace IO {
         auto response = m_network.SendAndRecieveMessage(messageOut);
 
         if (response.wasSuccessful) {
-            return (int)response.data.integar;
+            return response.data.integar;
         }
         return -1;
     }
