@@ -1,7 +1,7 @@
 #include "NPhotoResistor.hpp"
 
 namespace IO {
-    NPhotoResistor::NPhotoResistor(int id, int boardAddress) : IPhotoResistor(id), m_boardAddress(boardAddress) {
+    NPhotoResistor::NPhotoResistor(int id, NetworkSensorInterface network) : IPhotoResistor(id), m_network(network) {
 
     }
 
@@ -13,7 +13,7 @@ namespace IO {
             SensorDataTypes()
         );
         // Send Message
-        auto response = SensorMessageResponse();
+        auto response = m_network.SendAndRecieveMessage(messageOut);
         if (response.wasSuccessful) {
             return response.data.integar;
         }

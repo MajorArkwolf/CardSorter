@@ -1,7 +1,7 @@
 #include "NPixelLight.hpp"
 
 namespace IO {
-    NPixelLight::NPixelLight(int id, int boardAddress) : IPixelLight(id), m_boardAddress(boardAddress) {}
+    NPixelLight::NPixelLight(int id, NetworkSensorInterface network) : IPixelLight(id), m_network(network) {}
 
     void NPixelLight::SetColor(const Shared::Color& color) {
         auto messageOut = SensorMessage(
@@ -10,9 +10,7 @@ namespace IO {
             Method(PixelLightMethods::SetColor),
             SensorDataTypes(color)
         );
-
-        // Send Message
-        auto response = SensorMessageResponse();
+        auto response = m_network.SendAndRecieveMessage(messageOut);
         if (!response.wasSuccessful) {
             //report error
         }
@@ -25,8 +23,7 @@ namespace IO {
             Method(PixelLightMethods::Show),
             SensorDataTypes()
         );
-        // Send Message
-        auto response = SensorMessageResponse();
+        auto response = m_network.SendAndRecieveMessage(messageOut);
         if (!response.wasSuccessful) {
             //report error
         }

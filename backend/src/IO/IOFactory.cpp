@@ -68,17 +68,18 @@ namespace IO {
             IO::Sensor* sensor = nullptr;
             if (m_networkModule != nullptr) {
                 auto& nSensor = message.Data.networkSensor;
+                auto network = NetworkSensorInterface(nSensor.BoardID, m_networkModule);
                 switch (message.Type)
                 {
                 case IO::Definition::SensorType::PixelLight:
-                    sensor = new IO::NPixelLight(message.ID, nSensor.BoardID);
+                    sensor = new IO::NPixelLight(message.ID, network);
                     break;
                 case IO::Definition::SensorType::PhotoResistor:
-                    sensor = new IO::NPhotoResistor(message.ID, nSensor.BoardID);
+                    sensor = new IO::NPhotoResistor(message.ID, network);
                     break;
                 case IO::Definition::SensorType::DeattachedServoMotor:
                 case IO::Definition::SensorType::ServoMotor:
-                    sensor = new IO::NServoMotor(message.ID, nSensor.BoardID);
+                    sensor = new IO::NServoMotor(message.ID, network);
                     break;
                 default:
                     break;

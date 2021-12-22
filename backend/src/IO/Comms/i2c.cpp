@@ -118,35 +118,26 @@ namespace Comm {
     MessageProtocol::MessageByteStream i2cDriver::Recieve() {
         byte* payLoad = nullptr;
         size_t numberOfBytes = 0;
-        Serial.println("start recv");
         if (m_lastSendAddress != 0) {
-            Serial.println("requesting payload size");
             size_t offset = 0;
             byte* mes = (byte*)(&numberOfBytes);
             Wire.requestFrom(m_lastSendAddress, sizeof(numberOfBytes));
             while(Wire.available())    // slave may send less than requested
             {
-                Serial.println("Reading...");
                 if (offset >= (size_t)(sizeof(numberOfBytes))) {
-                    Serial.println("to many bites, ejecting");
-                    Serial.println(offset);
-                    Serial.println(sizeof(numberOfBytes) / sizeof(byte));
                     break;
                 }
                 mes[offset] = Wire.read();
                 Serial.println(numberOfBytes);
-                Serial.println("Read.");
                 ++offset;
             }
             payLoad = (byte*)malloc(numberOfBytes);
             Serial.println(numberOfBytes);
             if (payLoad != nullptr) {
                 offset = 0;
-                Serial.println("second request");
                 Wire.requestFrom(m_lastSendAddress, numberOfBytes);
                 while(Wire.available())    // slave may send less than requested
                 {
-                    Serial.println("Go");
                     payLoad[offset] = Wire.read();
                     ++offset;
                 }
@@ -156,7 +147,6 @@ namespace Comm {
         }
         auto messageOut = MessageProtocol::MessageByteStream(numberOfBytes, payLoad);
         m_lastSendAddress = 0;
-        Serial.println("recv finsihed");
         return messageOut;
     }
 }

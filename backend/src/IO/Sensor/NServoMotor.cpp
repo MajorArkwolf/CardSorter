@@ -1,7 +1,10 @@
 #include "NServoMotor.hpp"
 
 namespace IO {
-    NServoMotor::NServoMotor(int id, int boardAddress) : IServoMotor(id), m_boardAddress(boardAddress) {}
+    NServoMotor::NServoMotor(int id, NetworkSensorInterface network) : 
+    IServoMotor(id), 
+    m_network(network)
+    {}
     
     void NServoMotor::Set(int degrees) {
         auto messageOut = SensorMessage(
@@ -11,7 +14,7 @@ namespace IO {
             SensorDataTypes((int8_t)degrees)
         );
         // Send Message
-        auto response = SensorMessageResponse();
+        auto response = m_network.SendAndRecieveMessage(messageOut);
         if (!response.wasSuccessful) {
             // log
         }
@@ -25,8 +28,8 @@ namespace IO {
             SensorDataTypes()
         );
 
-        // Send Message
-        auto response = SensorMessageResponse();
+        auto response = m_network.SendAndRecieveMessage(messageOut);
+
         if (response.wasSuccessful) {
             return (int)response.data.integar;
         }

@@ -18,21 +18,7 @@ namespace IO {
         i2c.Connect();
     }
 
-    void IOManager::Update() {
-        //if (i2c.MessagePending()) {
-        //    Serial.println("Step 1");
-        //    auto recv = i2c.Recieve();
-        //    if (recv.GetByteStream() != nullptr) {
-        //        Serial.println("Step 2");
-        //        auto message = MessageProtocol::Message::BytesToMessage(recv);
-        //        auto messageOut = HandleMessage(message);
-        //        auto output = messageOut.MessageToBytes();
-        //        Serial.println("Step 3");
-        //        i2c.Send(0, output);
-        //        Serial.println("Step 4");
-        //    }
-        //}
-    }
+    void IOManager::Update() {}
 
     void IOManager::Reset() {
         for (unsigned i = 0; i < m_sensorArray.GetSize(); ++i) {
