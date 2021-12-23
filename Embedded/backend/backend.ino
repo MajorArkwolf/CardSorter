@@ -1,6 +1,5 @@
-#include "src/IO/Comms/i2c.hpp"
 #include "src/BoardDefinitions.hpp"
-#include "src/IO/IOFactory.hpp"
+
 
 //#define BOARD_TYPE PASSENGER_BOARD
 #define BOARD_TYPE DRIVER_BOARD
@@ -9,18 +8,16 @@
 #if BOARD_TYPE == DRIVER_BOARD
 #include "src/IO/IOOverseer.hpp"
 IO::IOOverseer overseer = IO::IOOverseer();
+Comm::SerialJsonComm comm;
 void setup()
 {
     delay(5000);
-    Serial.begin(9600);
-    Serial.println("We are live");
     overseer.Setup();
     
 }
 
 void loop()
 {
-    delay(3000);
     overseer.Update();
 }
 #endif
