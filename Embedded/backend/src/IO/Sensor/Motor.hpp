@@ -6,7 +6,7 @@ namespace IO {
     class Motor : public IMotor {
     public:
         Motor(int id, const MotorData& data);
-        ~Motor();
+        ~Motor() override;
         void Setup() override;
         void Set(bool turnOn) override;
         void SetOnTimer(int nanoSeconds) override;

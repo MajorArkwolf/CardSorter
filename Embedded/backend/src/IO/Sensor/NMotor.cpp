@@ -2,9 +2,7 @@
 
 namespace IO {
 
-    NMotor::NMotor(int id, NetworkSensorInterface network) : IMotor(id) {
-        m_network = network;
-    }
+    NMotor::NMotor(int id, NetworkSensorInterface network) : IMotor(id), m_network(network) {}
 
     NMotor::~NMotor() {
 

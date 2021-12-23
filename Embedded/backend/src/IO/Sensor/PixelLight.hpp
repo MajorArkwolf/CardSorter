@@ -9,6 +9,7 @@ namespace IO {
     public:
         PixelLight(int id, const PixelLightData& data);
         PixelLight(int pin, int numberOfPixels);
+        ~PixelLight() override {};
         void SetColor(const Shared::Color& color) override;
         void Show() override;
         void Setup() override;
