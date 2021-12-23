@@ -28,6 +28,7 @@ namespace Comm {
         bool Send(const int address, const MessageProtocol::MessageByteStream& payload) override;
         MessageProtocol::MessageByteStream Recieve() override;
         bool MessagePending();
+        int GetAddress() const;
         static void OnRequestHandle();
         static void OnRecieveHandle(int numBytes);
         static void SetMessanger(IO::IOManager* manager);

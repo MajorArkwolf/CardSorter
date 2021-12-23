@@ -3,6 +3,7 @@
 #include "../Array.hpp"
 #include "IOManager.hpp"
 #include "Comms/i2c.hpp"
+#include "../System.hpp"
 
 namespace IO {
     class IOOverseer {
@@ -26,6 +27,6 @@ namespace IO {
         SensorIDDistributor m_sensorIDDistributor;
         Comm::i2cDriver i2c;
         Container::Array<Sensor*> m_sensorMapping;
-        bool m_systemFailure;
+        System::BoardStatus m_systemStatus;
     };
 }

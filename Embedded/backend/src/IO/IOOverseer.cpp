@@ -7,7 +7,7 @@
 namespace IO {
         IOOverseer::IOOverseer() : m_sensorIDDistributor(),
         m_sensorMapping(),
-        m_systemFailure(false),
+        m_systemStatus(System::BoardStatus::WaitingSetup),
         i2c() {}
         
         IOOverseer::~IOOverseer() {}
@@ -15,6 +15,7 @@ namespace IO {
         void IOOverseer::Setup() {
             i2c.Connect();
             RegisterSensor(1, Definition::SensorType::DeattachedServoMotor, SensorInitData(MotorData(3)));
+            m_systemStatus = System::BoardStatus::Running;
         }
 
         void IOOverseer::Update() {

@@ -3,6 +3,7 @@
 #include "Sensor/SensorMessage.hpp"
 #include "Sensor/Sensor.hpp"
 #include "../Error.hpp"
+#include "HeartBeat.hpp"
 
 namespace {
     bool IDAlreadyInUse(const Container::Array<IO::Sensor*>& container, IO::SensorID id) {
@@ -18,7 +19,7 @@ namespace {
 namespace IO {
     IOManager::IOManager(int thisBoardID) :
     i2c(thisBoardID),
-    m_systemFailure(false)
+    m_systemStatus(System::BoardStatus::WaitingSetup)
     {
         m_sensorArray = Container::Array<Sensor*>();
         Comm::i2cPassenger::SetMessanger(this);
@@ -48,14 +49,20 @@ namespace IO {
         case MessageProtocol::MessageType::CreateSensor:
             return CreateSensorRequest(messageIn);
         case MessageProtocol::MessageType::SensorInstruction:
-            return SensorInstructionRequest(messageIn);
+            if (m_systemStatus == System::BoardStatus::Running) {
+                return SensorInstructionRequest(messageIn);
+            }
         case MessageProtocol::MessageType::Reset:
             Reset();
-            m_systemFailure = false;
+            m_systemStatus = System::BoardStatus::WaitingSetup;
             return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
+        case MessageProtocol::MessageType::HeartBeat:
+            return GenerateHeartBeat();
         case MessageProtocol::MessageType::Emergency:
+            // Set system status to failure during an emergency message but then fall into failure and reply
+            // with the acknowledge.
+            m_systemStatus = System::BoardStatus::Failure;
         case MessageProtocol::MessageType::Failure:
-            m_systemFailure = true;
             return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
         default:
             return MessageProtocol::Message(MessageProtocol::MessageType::Failure, MessageProtocol::GenericMessageToBytes(Comm::Error::Undefined));
@@ -94,5 +101,12 @@ namespace IO {
             }
         }
         return MessageProtocol::Message();
+    }
+
+    MessageProtocol::Message IOManager::GenerateHeartBeat() {
+        auto messageOut = MessageProtocol::Message();
+        auto heartBeat = System::HeartBeat(i2c.GetAddress(), m_systemStatus);
+        heartBeat.PopulateIDList(m_sensorArray);
+        return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::GenericMessageToBytes<System::HeartBeat>(heartBeat));
     }
 }

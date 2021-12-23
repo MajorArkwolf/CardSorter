@@ -35,7 +35,7 @@ namespace Comm {
     }
 
     bool i2cPassenger::Send(const int address, const MessageProtocol::MessageByteStream& payload) {
-
+        return false;
     }
 
     MessageProtocol::MessageByteStream i2cPassenger::Recieve() {
@@ -44,6 +44,10 @@ namespace Comm {
             messageContainer.GetRecvMessage(messageOut);
         }
         return messageOut;
+    }
+
+    int i2cPassenger::GetAddress() const {
+        return m_address;
     }
 
     bool i2cPassenger::MessagePending() {

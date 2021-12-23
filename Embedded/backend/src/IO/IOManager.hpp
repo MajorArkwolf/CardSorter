@@ -4,6 +4,7 @@
 #include "../Message.hpp"
 #include "IOFactory.hpp"
 #include "Comms/i2c.hpp"
+#include "../System.hpp"
 
 namespace IO {
     class IOManager {
@@ -17,9 +18,10 @@ namespace IO {
     private:
         MessageProtocol::Message CreateSensorRequest(const MessageProtocol::Message& messageIn);
         MessageProtocol::Message SensorInstructionRequest(const MessageProtocol::Message& messageIn);
+        MessageProtocol::Message GenerateHeartBeat();
 
         Comm::i2cPassenger i2c;
         Container::Array<Sensor*> m_sensorArray;
-        bool m_systemFailure;
+        System::BoardStatus m_systemStatus;
     };
 }
