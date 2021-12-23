@@ -28,8 +28,8 @@ namespace IO {
     SensorInitData::SensorInitData(PhotoResitorData data) {
         this->photoResitorData = data;
     }
-    SensorInitData::SensorInitData(ServoMotorData data) {
-        this->servoMotorData = data;
+    SensorInitData::SensorInitData(MotorData data) {
+        this->motorData = data;
     }
     SensorInitData::SensorInitData(PixelLightData data) {
         this->pixelLightData = data;

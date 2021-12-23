@@ -8,10 +8,12 @@ namespace IO {
         ServoMotorMethods servoMotorMethod;
         PixelLightMethods pixelLightMethod;
         PhotoResistorMethods photoResistorMethod;
+        MotorMethods motorMethods;
         Method();
         Method(ServoMotorMethods methodInvoking);
         Method(PixelLightMethods methodInvoking);
         Method(PhotoResistorMethods methodInvoking);
+        Method(MotorMethods methodInvoking);
     };
 
     struct SensorMessage {

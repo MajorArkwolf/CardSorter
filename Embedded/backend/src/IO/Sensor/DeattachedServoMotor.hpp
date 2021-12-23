@@ -12,7 +12,7 @@ namespace IO {
      */
     class DeattachedServoMotor : public ServoMotor {
     public:
-        DeattachedServoMotor(int id, const ServoMotorData& data);
+        DeattachedServoMotor(int id, const MotorData& data);
         void Setup() override;
         void Set(int degrees) override;
         int Get() override;

@@ -3,12 +3,14 @@
 #include "Sensor/NPhotoResistor.hpp"
 #include "Sensor/NServoMotor.hpp"
 #include "Sensor/NPixelLight.hpp"
+#include "Sensor/NMotor.hpp"
 
 #ifndef _COMPUTER_
 #include "Sensor/PixelLight.hpp"
 #include "Sensor/ServoMotor.hpp"
 #include "Sensor/PhotoResistor.hpp"
 #include "Sensor/DeattachedServoMotor.hpp"
+#include "Sensor/Motor.hpp"
 #endif
 
 namespace IO { 
@@ -50,12 +52,16 @@ namespace IO {
                 sensor = new IO::PhotoResistor(message.ID, message.Data.photoResitorData);
                 sensor->Setup();
                 break;
+            case IO::Definition::SensorType::Motor:
+                sensor = new IO::Motor(message.ID, message.Data.motorData);
+                sensor->Setup();
+                break;
             case IO::Definition::SensorType::ServoMotor:
-                sensor = new IO::ServoMotor(message.ID, message.Data.servoMotorData);
+                sensor = new IO::ServoMotor(message.ID, message.Data.motorData);
                 sensor->Setup();
                 break;
             case IO::Definition::SensorType::DeattachedServoMotor:
-                sensor = new IO::DeattachedServoMotor(message.ID, message.Data.servoMotorData);
+                sensor = new IO::DeattachedServoMotor(message.ID, message.Data.motorData);
                 sensor->Setup();
             #endif
             default:
@@ -80,6 +86,9 @@ namespace IO {
                 case IO::Definition::SensorType::DeattachedServoMotor:
                 case IO::Definition::SensorType::ServoMotor:
                     sensor = new IO::NServoMotor(message.ID, network);
+                    break;
+                case IO::Definition::SensorType::Motor:
+                    sensor = new IO::NMotor(message.ID, network);
                     break;
                 default:
                     break;

@@ -10,6 +10,6 @@ namespace IO {
         virtual ~IPixelLight() {}
         virtual void SetColor(const Shared::Color& color) = 0;
         virtual void Show() = 0;
-        Definition::SensorType GetSensorType() override { return Definition::SensorType::PixelLight; }
+        Definition::SensorType GetSensorType() const override { return Definition::SensorType::PixelLight; }
     };
 }

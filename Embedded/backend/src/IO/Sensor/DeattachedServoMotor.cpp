@@ -20,7 +20,7 @@ namespace {
 }
 
 namespace IO {
-    DeattachedServoMotor::DeattachedServoMotor(int id, const ServoMotorData& data) :
+    DeattachedServoMotor::DeattachedServoMotor(int id, const MotorData& data) :
     ServoMotor(id, data), m_lastValue(0) {}
 
     void DeattachedServoMotor::Setup() {

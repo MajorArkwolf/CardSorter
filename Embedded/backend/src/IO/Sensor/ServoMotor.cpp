@@ -2,7 +2,7 @@
 #include <Servo.h>
 
 namespace IO {
-    ServoMotor::ServoMotor(int id, const ServoMotorData& data) :
+    ServoMotor::ServoMotor(int id, const MotorData& data) :
     IServoMotor(id) {
         m_pin = data.Pin;
     }

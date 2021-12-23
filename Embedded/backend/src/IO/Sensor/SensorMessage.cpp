@@ -18,6 +18,10 @@ namespace IO {
         this->photoResistorMethod = methodInvoking;
     }
 
+    Method::Method(MotorMethods methodInvoking) {
+        this->motorMethods = methodInvoking;
+    }
+
     SensorMessage::SensorMessage() {
         sensorID = 0;
         type = Definition::SensorType::None;

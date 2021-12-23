@@ -12,6 +12,7 @@ namespace IO {
             PhotoResistor,
             ServoMotor,
             DeattachedServoMotor,
+            Motor,
         };
     }
     struct NSensor {
@@ -38,9 +39,9 @@ namespace IO {
         Show
     };
 
-    struct ServoMotorData {
+    struct MotorData {
         int Pin;
-        ServoMotorData(int pin) : Pin(pin) {}
+        MotorData(int pin) : Pin(pin) {}
     };
 
     enum class ServoMotorMethods {
@@ -48,6 +49,12 @@ namespace IO {
         Set,
     };
     
+    enum class MotorMethods {
+        Get,
+        Set,
+        SetOnTimer,
+    };
+
     union SensorDataTypes
     {
         bool boolean;
@@ -63,12 +70,12 @@ namespace IO {
     {
         NSensor networkSensor;
         PhotoResitorData photoResitorData;
-        ServoMotorData servoMotorData;
+        MotorData motorData;
         PixelLightData pixelLightData;
         SensorInitData();
         SensorInitData(NSensor data);
         SensorInitData(PhotoResitorData data);
-        SensorInitData(ServoMotorData data);
+        SensorInitData(MotorData data);
         SensorInitData(PixelLightData data);
 
     };

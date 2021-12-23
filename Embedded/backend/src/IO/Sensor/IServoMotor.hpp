@@ -9,6 +9,6 @@ namespace IO {
         virtual ~IServoMotor() {}
         virtual void Set(int degrees) = 0;
         virtual int Get() = 0;
-        Definition::SensorType GetSensorType() override { return Definition::SensorType::ServoMotor; }
+        Definition::SensorType GetSensorType() const override { return Definition::SensorType::ServoMotor; }
     };
 }

@@ -11,7 +11,7 @@ namespace IO {
             m_id,
             GetSensorType(),
             Method(ServoMotorMethods::Set),
-            SensorDataTypes((int8_t)degrees)
+            SensorDataTypes(degrees)
         );
         // Send Message
         auto response = m_network.SendAndRecieveMessage(messageOut);

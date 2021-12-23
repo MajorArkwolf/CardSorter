@@ -14,7 +14,7 @@ namespace IO {
 
         void IOOverseer::Setup() {
             i2c.Connect();
-            RegisterSensor(1, Definition::SensorType::DeattachedServoMotor, SensorInitData(ServoMotorData(3)));
+            RegisterSensor(1, Definition::SensorType::DeattachedServoMotor, SensorInitData(MotorData(3)));
         }
 
         void IOOverseer::Update() {

@@ -7,6 +7,6 @@ namespace IO {
         IPhotoResistor(int id) : Sensor(id) {}
         virtual ~IPhotoResistor() {};
         virtual int Get() = 0;
-        Definition::SensorType GetSensorType() override { return Definition::SensorType::PhotoResistor; }
+        Definition::SensorType GetSensorType() const override { return Definition::SensorType::PhotoResistor; }
     };
 }

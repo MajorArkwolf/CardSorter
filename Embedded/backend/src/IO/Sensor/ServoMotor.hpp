@@ -8,7 +8,7 @@ namespace IO {
     
     class ServoMotor : public IServoMotor {
     public:
-        ServoMotor(int id, const ServoMotorData& data);
+        ServoMotor(int id, const MotorData& data);
         ~ServoMotor();
         void Setup() override;
         void Set(int degrees) override;
