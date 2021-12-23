@@ -79,4 +79,12 @@ namespace IO {
         SensorInitData(PixelLightData data);
 
     };
+
+    struct SensorTemplate {
+        int boardAddress; 
+        Definition::SensorType type;
+        SensorInitData data;
+        SensorTemplate() : boardAddress(-1), type(Definition::SensorType::None), data() {};
+    };
+
 }
