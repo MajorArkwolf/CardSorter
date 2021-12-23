@@ -20,5 +20,6 @@ namespace IO {
 
         Comm::i2cPassenger i2c;
         Container::Array<Sensor*> m_sensorArray;
+        bool m_systemFailure;
     };
 }

@@ -7,6 +7,7 @@
 namespace IO {
         IOOverseer::IOOverseer() : m_sensorIDDistributor(),
         m_sensorMapping(),
+        m_systemFailure(false),
         i2c() {}
         
         IOOverseer::~IOOverseer() {}

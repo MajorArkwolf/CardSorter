@@ -26,5 +26,6 @@ namespace IO {
         SensorIDDistributor m_sensorIDDistributor;
         Comm::i2cDriver i2c;
         Container::Array<Sensor*> m_sensorMapping;
+        bool m_systemFailure;
     };
 }

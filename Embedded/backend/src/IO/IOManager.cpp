@@ -1,10 +1,24 @@
 #include "IOManager.hpp"
 #include "IOFactory.hpp"
 #include "Sensor/SensorMessage.hpp"
+#include "Sensor/Sensor.hpp"
+#include "../Error.hpp"
+
+namespace {
+    bool IDAlreadyInUse(const Container::Array<IO::Sensor*>& container, IO::SensorID id) {
+        for (auto i = 0; i < container.GetSize(); ++i) {
+            if (container.Get(i)->GetID() == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 namespace IO {
     IOManager::IOManager(int thisBoardID) :
-    i2c(thisBoardID)
+    i2c(thisBoardID),
+    m_systemFailure(false)
     {
         m_sensorArray = Container::Array<Sensor*>();
         Comm::i2cPassenger::SetMessanger(this);
@@ -37,12 +51,14 @@ namespace IO {
             return SensorInstructionRequest(messageIn);
         case MessageProtocol::MessageType::Reset:
             Reset();
+            m_systemFailure = false;
             return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
         case MessageProtocol::MessageType::Emergency:
         case MessageProtocol::MessageType::Failure:
-            /* code */
-            break;
+            m_systemFailure = true;
+            return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
         default:
+            return MessageProtocol::Message(MessageProtocol::MessageType::Failure, MessageProtocol::GenericMessageToBytes(Comm::Error::Undefined));
             break;
         }
         return MessageProtocol::Message();
@@ -51,14 +67,18 @@ namespace IO {
     MessageProtocol::Message IOManager::CreateSensorRequest(const MessageProtocol::Message& messageIn) {
         auto factoryMessage = MessageProtocol::BytesToGenericMessage<IO::Factory::FactoryMessage>(messageIn.GetData());
         if (factoryMessage.Type != Definition::SensorType::None) {
-            auto factory = Factory::IOFactory();
-            auto sensor = factory.CreateSensor(factoryMessage);
-            if (sensor != nullptr) {
-                m_sensorArray.Append(sensor);
-                return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
+            if (!IDAlreadyInUse(m_sensorArray, factoryMessage.ID)) {
+                auto factory = Factory::IOFactory();
+                auto sensor = factory.CreateSensor(factoryMessage);
+                if (sensor != nullptr) {
+                    m_sensorArray.Append(sensor);
+                    return MessageProtocol::Message(MessageProtocol::MessageType::Acknowledge, MessageProtocol::MessageByteStream());
+                }
+            } else {
+                MessageProtocol::Message(MessageProtocol::MessageType::Failure, MessageProtocol::GenericMessageToBytes(Comm::Error::IDinUse));
             }
         }
-        return MessageProtocol::Message();
+        return MessageProtocol::Message(MessageProtocol::MessageType::Failure, MessageProtocol::GenericMessageToBytes(Comm::Error::Undefined));
     }
 
     MessageProtocol::Message IOManager::SensorInstructionRequest(const MessageProtocol::Message& messageIn) {
