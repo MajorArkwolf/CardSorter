@@ -26,14 +26,14 @@ namespace Container {
             return false;
         }
 
-        const T& Get(unsigned index) {
+        const T& Get(unsigned index) const {
             if (index < m_size) {
                 return m_array[index];
             }
             return m_array[0];
         }
 
-        unsigned GetSize() { return m_size; }
+        unsigned GetSize() const { return m_size; }
     private:
         T m_array[MAX_ARRAY_INDEX];
         unsigned m_size;
