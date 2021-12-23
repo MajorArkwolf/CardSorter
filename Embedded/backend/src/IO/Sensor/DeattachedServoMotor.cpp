@@ -1,6 +1,4 @@
 #include "DeattachedServoMotor.hpp"
-
-#include "ServoMotor.hpp"
 #include <Servo.h>
 
 #ifdef degrees

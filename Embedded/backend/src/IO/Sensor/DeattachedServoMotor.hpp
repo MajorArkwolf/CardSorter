@@ -1,8 +1,6 @@
 #pragma once
 #include "ServoMotor.hpp"
 
-class Servo;
-
 namespace IO {
     /**
      * @brief This expands upon a normal ServoMotor with the exception that
