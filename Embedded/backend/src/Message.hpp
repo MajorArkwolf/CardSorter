@@ -8,6 +8,7 @@ namespace MessageProtocol {
     enum class MessageType {    
         CreateSensor,
         SensorInstruction,
+        HeartBeat,
         Acknowledge,
         Reset,
         Emergency,
