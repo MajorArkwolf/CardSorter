@@ -24,7 +24,7 @@ namespace IO {
 
     void Motor::SetOnTimer(int nanoSeconds) {
         digitalWrite(m_pin, HIGH);
-        // set a timer
+        // TODO: set a timer
         m_isTurnedOn = true;
     }
 
