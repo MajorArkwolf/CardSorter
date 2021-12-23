@@ -26,7 +26,10 @@ add_executable(FactoryMessageTests backend_tests/FactoryMessage_tests.cpp
   backend/src/IO/Sensor/SensorMessage.cpp
   backend/src/IO/Sensor/NPhotoResistor.cpp
   backend/src/IO/Sensor/NServoMotor.cpp
+  backend/src/IO/Sensor/NMotor.cpp
   backend/src/IO/Sensor/NPixelLight.cpp
+  backend/src/IO/Sensor/NetworkSensorInterface.cpp
+  backend_tests/MockObjects/MockComm.cpp
   backend/src/IO/Sensor/NetworkSensorInterface.cpp)
 list(APPEND PROJECT_LIST FactoryMessageTests)
 
