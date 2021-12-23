@@ -16,10 +16,14 @@ namespace Comm {
     }
 
     bool SerialComm::Send(const int address, const MessageProtocol::MessageByteStream& payload) {
-
+        Serial.write(payload.GetByteStream(), payload.GetNumberOfBytes());
     }
 
     MessageProtocol::MessageByteStream SerialComm::Recieve() {
+        auto message = MessageProtocol::MessageByteStream();
+        if (Serial.available() > 0) {
 
+        }
+        return message;
     }
 }

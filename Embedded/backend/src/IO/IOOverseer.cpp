@@ -8,12 +8,13 @@ namespace IO {
         IOOverseer::IOOverseer() : m_sensorIDDistributor(),
         m_sensorMapping(),
         m_systemStatus(System::BoardStatus::WaitingSetup),
-        i2c() {}
+        m_i2c(),
+        m_serialComm() {}
         
         IOOverseer::~IOOverseer() {}
 
         void IOOverseer::Setup() {
-            i2c.Connect();
+            m_i2c.Connect();
             RegisterSensor(1, Definition::SensorType::DeattachedServoMotor, SensorInitData(MotorData(3)));
             m_systemStatus = System::BoardStatus::Running;
         }
@@ -39,17 +40,17 @@ namespace IO {
             if(boardAddress != 0) {
                 SensorID newId = m_sensorIDDistributor.GetNewUniqueID();
                 auto sensorInfo = Factory::FactoryMessage(Factory::SensorLocation::Local, type, newId, data);
-                i2c.Send(boardAddress, MessageProtocol::Message(MessageProtocol::MessageType::CreateSensor, MessageProtocol::GenericMessageToBytes(sensorInfo)).MessageToBytes());
-                auto response = MessageProtocol::Message::BytesToMessage(i2c.Recieve());
+                m_i2c.Send(boardAddress, MessageProtocol::Message(MessageProtocol::MessageType::CreateSensor, MessageProtocol::GenericMessageToBytes(sensorInfo)).MessageToBytes());
+                auto response = MessageProtocol::Message::BytesToMessage(m_i2c.Recieve());
                 if (response.GetMessageType() == MessageProtocol::MessageType::Acknowledge) {
-                    auto factory = Factory::IOFactory(&i2c);
+                    auto factory = Factory::IOFactory(&m_i2c);
                     auto networkData = SensorInitData(NSensor(boardAddress));
                     sensorInfo = Factory::FactoryMessage(Factory::SensorLocation::Network, type, newId, networkData);
                     m_sensorMapping.Append(factory.CreateSensor(sensorInfo));
                 }
             } else {
                 SensorID newId = m_sensorIDDistributor.GetNewUniqueID();
-                auto factory = Factory::IOFactory(&i2c);
+                auto factory = Factory::IOFactory(&m_i2c);
                 auto sensorInfo = Factory::FactoryMessage(Factory::SensorLocation::Local, type, newId, data);
                 auto sensor = factory.CreateSensor(sensorInfo);
                 sensor->Setup();

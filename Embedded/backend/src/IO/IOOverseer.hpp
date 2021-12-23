@@ -4,6 +4,8 @@
 #include "IOManager.hpp"
 #include "Comms/i2c.hpp"
 #include "../System.hpp"
+#include "Comms/SerialComm.hpp"
+#include "Sensor/SensorDefinitionsJson.hpp"
 
 namespace IO {
     class IOOverseer {
@@ -25,7 +27,8 @@ namespace IO {
         void RegisterSensor(int boardAddress, Definition::SensorType type, SensorInitData data);
 
         SensorIDDistributor m_sensorIDDistributor;
-        Comm::i2cDriver i2c;
+        Comm::i2cDriver m_i2c;
+        Comm::SerialComm m_serialComm;
         Container::Array<Sensor*> m_sensorMapping;
         System::BoardStatus m_systemStatus;
     };
