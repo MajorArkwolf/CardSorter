@@ -16,25 +16,32 @@ namespace IO {
 
     void IOOverseer::Setup() {
         m_i2c.Connect();
-
+        m_serialComm.Connect();
     }
 
     void IOOverseer::Update() {
         if (m_serialComm.SerialDataPending()) {
-            auto jsonContents = m_serialComm.Recieve().to<JsonObject>();
-            for (auto i = jsonContents.begin(); i != jsonContents.end(); ++i) {
-                if (JSON::StringToEnum(i->key().c_str()) == JSON::JsonKeys::Create) {
-                    RegisterSensor(JSON::JsonToSensorTemplate(i->value()));
-                }
-                if (JSON::StringToEnum(i->key().c_str()) == JSON::JsonKeys::Update) {
+            auto doc = DynamicJsonDocument(30);
+            auto isValid = m_serialComm.Recieve(doc);
+            if (isValid == true) {
+                if (!doc["Ping"].isNull()) {
+                    char pong[] = "{\"Pong\": true}";
+                    auto doc = DynamicJsonDocument(20);
+                    DeserializationError error = deserializeJson(doc, pong);
+                    m_serialComm.Send(doc);
+                } else if (!doc["Register"].isNull()) {
+                    auto jsonBoardArray = doc["Register"].as<JsonArrayConst>();
+                } else if (!doc["Create"].isNull()) {
+                    auto jsonSensorArray = doc["Create"].as<JsonArrayConst>();
+                } else if (!doc["Update"].isNull()) {
+                    auto jsonSensorArray = doc["Update"].as<JsonArrayConst>();
+                } else if (!doc["Reset"].isNull()) {
 
+                } else {
+                    m_serialComm.Send(String("Error"), "Unknown");
                 }
-                if (JSON::StringToEnum(i->key().c_str()) == JSON::JsonKeys::Reset) {
-                    break;
-                }
-                if (JSON::StringToEnum(i->key().c_str()) == JSON::JsonKeys::Error) {
-
-                }
+            } else {
+                m_serialComm.Send(String("Error"), m_serialComm.m_out);
             }
         }
     }

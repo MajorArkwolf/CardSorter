@@ -5,6 +5,7 @@ namespace JSON {
         Create,
         Update,
         Reset,
+        Ping,
         Error,
     };
 
@@ -12,6 +13,7 @@ namespace JSON {
         if (string == "Create") { return Create; }
         if (string == "Update") { return Update; }
         if (string == "Reset") { return Reset; }
+        if (string == "Ping") { return Ping; }
         return Error; 
     }
 }

@@ -8,12 +8,9 @@
 #if BOARD_TYPE == DRIVER_BOARD
 #include "src/IO/IOOverseer.hpp"
 IO::IOOverseer overseer = IO::IOOverseer();
-Comm::SerialJsonComm comm;
 void setup()
 {
-    delay(5000);
     overseer.Setup();
-    
 }
 
 void loop()
