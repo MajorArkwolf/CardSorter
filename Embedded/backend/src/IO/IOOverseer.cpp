@@ -8,9 +8,10 @@
 namespace IO {
     IOOverseer::IOOverseer() : m_sensorIDDistributor(),
     m_sensorMapping(),
-    m_systemStatus(System::BoardStatus::WaitingSetup),
     m_i2c(),
-    m_serialComm() {}
+    m_serialComm(),
+    m_boardAddresses(),
+    m_systemStatus(System::BoardStatus::WaitingSetup) {}
     
     IOOverseer::~IOOverseer() {}
 
@@ -20,30 +21,7 @@ namespace IO {
     }
 
     void IOOverseer::Update() {
-        if (m_serialComm.SerialDataPending()) {
-            auto doc = DynamicJsonDocument(30);
-            auto isValid = m_serialComm.Recieve(doc);
-            if (isValid == true) {
-                if (!doc["Ping"].isNull()) {
-                    char pong[] = "{\"Pong\": true}";
-                    auto doc = DynamicJsonDocument(20);
-                    DeserializationError error = deserializeJson(doc, pong);
-                    m_serialComm.Send(doc);
-                } else if (!doc["Register"].isNull()) {
-                    auto jsonBoardArray = doc["Register"].as<JsonArrayConst>();
-                } else if (!doc["Create"].isNull()) {
-                    auto jsonSensorArray = doc["Create"].as<JsonArrayConst>();
-                } else if (!doc["Update"].isNull()) {
-                    auto jsonSensorArray = doc["Update"].as<JsonArrayConst>();
-                } else if (!doc["Reset"].isNull()) {
-
-                } else {
-                    m_serialComm.Send(String("Error"), "Unknown");
-                }
-            } else {
-                m_serialComm.Send(String("Error"), m_serialComm.m_out);
-            }
-        }
+        HandleSerialMessage();
     }
 
     void IOOverseer::RegisterSensor(const SensorTemplate& data) {
@@ -66,5 +44,46 @@ namespace IO {
             sensor->Setup();
             m_sensorMapping.Append(sensor);
         }
+    }
+
+    void IOOverseer::HandleSerialMessage() {
+        if (m_serialComm.SerialDataPending()) {
+            auto doc = DynamicJsonDocument(30);
+            auto isValid = m_serialComm.Recieve(doc);
+            if (isValid == true) {
+                if (!doc["Ping"].isNull()) {
+                    char pong[] = "{\"Pong\": true}";
+                    auto doc = DynamicJsonDocument(20);
+                    DeserializationError error = deserializeJson(doc, pong);
+                    m_serialComm.Send(doc);
+                    return;
+                } else if (!doc["Register"].isNull()) {
+                    auto jsonRegistration = doc["Register"].as<JsonVariant>();
+                    HandleSerialSetupMessage(jsonRegistration);
+                    return;
+                } else if (!doc["Update"].isNull()) {
+                    if (m_systemStatus == System::BoardStatus::Running) {
+                        auto jsonSensorArray = doc["Update"].as<JsonArrayConst>();
+                    }
+                } else if (!doc["Reset"].isNull()) {
+
+                } else {
+                    m_serialComm.Send(String("Error"), "Unknown");
+                }
+            }
+            m_serialComm.Send(String("Error"), "Unexpected end of IOOverseer::HandleSerialMessage");
+        }
+    }
+
+    void IOOverseer::HandleSerialSetupMessage(const JsonVariant& jsonReg) {
+        if(jsonReg.containsKey("Board")) {
+            // setup all boards
+            if (jsonReg.containsKey("Sensors")) {
+                m_serialComm.Send("Register", "Sensors");
+            }
+            m_serialComm.Send("Register", "board");
+            return;
+        }
+        m_serialComm.Send("Register", "fell thro while also being a stupidly long message to see if the payload is being fucked hard");
     }
 }

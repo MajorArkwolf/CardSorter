@@ -8,6 +8,7 @@
 
 namespace IO {
     class IOOverseer {
+        using BoardID = int;
         class SensorIDDistributor {
         private:
             IO::SensorID m_idUniqueDistributor;
@@ -24,11 +25,14 @@ namespace IO {
 
     private:
         void RegisterSensor(const SensorTemplate& data);
+        void HandleSerialMessage();
+        void HandleSerialSetupMessage(const JsonVariant& jsonReg);
 
         SensorIDDistributor m_sensorIDDistributor;
         Comm::i2cDriver m_i2c;
         Comm::SerialJsonComm m_serialComm;
         Container::Array<Sensor*> m_sensorMapping;
+        Container::Array<BoardID> m_boardAddresses;
         System::BoardStatus m_systemStatus;
     };
 }

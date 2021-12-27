@@ -54,7 +54,7 @@ namespace JSON {
         auto message = IO::SensorTemplate();
         message.boardAddress = json["Board"].as<int>();
         message.type = (IO::Definition::SensorType)json["Type"].as<int>();
-        message.data = JsonToSensorInitData(message.type, json["params"]);
+        message.data = JsonToSensorInitData(message.type, json["Params"]);
         return message;
     }
 

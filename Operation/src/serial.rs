@@ -1,14 +1,17 @@
 use ascii::{AsciiChar, AsciiStr, AsciiString, IntoAsciiString};
 use color_eyre::eyre::{Result, WrapErr, eyre};
+use serialport::{SerialPort, SerialPortInfo};
+
 
 pub struct SerialComm {
-    comm_port: Box<dyn serialport::SerialPort>
+    comm_port: Box<dyn SerialPort>
 }
 
 impl SerialComm {
     pub fn connect() -> Result<SerialComm> {
         let ports = serialport::available_ports().wrap_err_with(||"no ports found")?;
         for p in ports {
+            println!("Using port: {}", p.port_name);
             let comm = serialport::new(p.port_name, 9600).open().wrap_err_with(||"failed to open port")?;
             return Ok(SerialComm{comm_port: comm});
         }

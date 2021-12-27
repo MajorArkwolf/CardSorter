@@ -13,7 +13,7 @@ namespace {
 namespace Comm {
 
     SerialJsonComm::SerialJsonComm() {
-        m_out = "uninit";
+        m_out = "init";
     }
 
     SerialJsonComm::~SerialJsonComm() {
@@ -34,11 +34,11 @@ namespace Comm {
     }
 
     void SerialJsonComm::Send(const String& string) {
-        while (Serial.availableForWrite() <= 0) { delay(10); }
+        while (Serial.availableForWrite() < 1) { delay(10); }
         Serial.write(G_ENQ);
         while ((char)Serial.read() != G_ACK) {delay(10);}
         size_t bytesTransmitted = string.length() * sizeof(char);
-        String messageOut = G_SOH + String(bytesTransmitted) + G_SOX + string + G_ETX + G_EOT;
+        String messageOut = G_SOH + bytesTransmitted + G_SOX + string + G_ETX + G_EOT;
         Serial.write(messageOut.c_str());
     }
 

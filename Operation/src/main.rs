@@ -5,9 +5,11 @@ use ascii::IntoAsciiString;
 use color_eyre::eyre::Result;
 
 //mod circuit;
-//mod sensor;
-//mod overseer;
+mod loader;
+mod sensor;
+mod overseer;
 mod serial;
+mod Serial;
 //use std::time::{Duration, Instant};
 
 
@@ -15,20 +17,23 @@ mod serial;
 fn main() -> Result<()> {
     color_eyre::install()?;
     env_logger::init();
-    info!("starting up");
-    println!("Start");
-    let out = "{\"Ping\": true}".into_ascii_string()?;
-    println!("Connect");
-    let mut serial = serial::SerialComm::connect()?;
-    println!("Send");
-    serial.send(&out)?;
-    println!("Recieve");
-    let x = serial.recieve();
-    match x {
-        Ok(y) => println!("FINAL: {}", y),
-        Err(z) => println!("Error: {}", z),
-    }
-    println!("Done");
+    let mut over_seer = overseer::OverSeer::new()?;
+    over_seer.setup_system()?;
+
+    //info!("starting up");
+    //println!("Start");
+    //let out = "{\"Ping\": true}".into_ascii_string()?;
+    //println!("Connect");
+    //let mut serial = serial::SerialComm::connect()?;
+    //println!("Send");
+    //serial.send(&out)?;
+    //println!("Recieve");
+    //let x = serial.recieve();
+    //match x {
+    //    Ok(y) => println!("FINAL: {}", y),
+    //    Err(z) => println!("Error: {}", z),
+    //}
+    //println!("Done");
     Ok(())
 
     //let mut running = true;

@@ -1,96 +1,41 @@
-pub enum SensorObject<T> {
-    AnalogInput(AnalogInput<T>),
-    AnalogOutput(AnalogOutput<T>),
-    DigitalInput(DigitalInput<T>),
-    DigitalOutput(DigitalOutput<T>)
+
+use serde::{Deserialize, Serialize};
+use serde_repr::*;
+
+#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug)]
+#[repr(u8)]
+pub enum SensorType {
+    None = 0,
+    PixelLight = 1,
+    PhotoResistor = 2,
+    ServoMotor = 3,
+    DeattachedServoMotor = 4,
+    Motor = 5,
 }
 
+impl Default for SensorType {
+    fn default() -> Self {
+        SensorType::None
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Sensor {
-    pub id: i64,
+    #[serde(default)]
+    pub sensor_id: u8,
+    #[serde(rename = "SensorType")]
+    #[serde(default)]
+    pub sensor_type: SensorType,
+    #[serde(rename = "BoardID")]
+    pub board_id: i64,
+    #[serde(rename = "Params")]
+    pub params: Params,
 }
 
-pub struct AnalogInput<T> {
-    sensor: Sensor,
-    value: T,
-    min: T,
-    max: T,
-}
-
-pub struct AnalogOutput<T> {
-    sensor: Sensor,
-    last_value: T,
-    min: T,
-    max: T,
-    command_sent: bool,
-}
-
-pub struct DigitalInput<T> {
-    sensor: Sensor,
-    value: T,
-}
-
-pub struct DigitalOutput<T> {
-    sensor: Sensor,
-    value: T,
-    command_sent: bool, 
-}
-
-impl<T> AnalogInput<T> {
-    fn new(sensor: Sensor, value: T, min: T, max: T) -> Self {
-        return AnalogInput {sensor, value, min, max};
-    }
-    fn get_min(self) -> T {
-        return self.min;
-    }
-
-    fn get_max(self) -> T {
-        return self.max;
-    }
-
-    fn get_value(self) -> T {
-        return self.value;
-    }
-}
-
-impl<T> AnalogOutput<T> {
-    fn new(sensor: Sensor, last_value: T, min: T, max: T) -> Self {
-        return AnalogOutput {sensor, last_value, min, max, command_sent: true};
-    }
-    fn get_min(self) -> T {
-        return self.min;
-    }
-
-    fn get_max(self) -> T {
-        return self.max;
-    }
-
-    fn get_last_value(self) -> T {
-        return self.last_value;
-    }
-
-    fn set_last_value(mut self, value: T) {
-        self.last_value = value;
-        self.command_sent = false;
-    }
-}
-
-impl<T> DigitalInput<T> {
-    fn new(sensor: Sensor, value: T) -> Self {
-        return DigitalInput {sensor, value};
-    }
-}
-
-impl<T> DigitalOutput<T> {
-    fn new(sensor: Sensor, value: T) -> Self {
-        return DigitalOutput {sensor, value, command_sent: false};
-    }
-
-    fn get_value(self) -> T {
-        return self.value;
-    }
-
-    fn set_value(mut self, value: T) {
-        self.command_sent = false;
-        self.value = value;
-    }
+#[derive(Serialize, Deserialize)]
+pub struct Params {
+    #[serde(rename = "Pin")]
+    pub pin: i64,
+    #[serde(rename = "NumberOfLeds")]
+    pub number_of_leds: Option<i64>,
 }

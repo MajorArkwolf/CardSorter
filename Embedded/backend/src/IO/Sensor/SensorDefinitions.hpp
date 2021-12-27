@@ -7,12 +7,12 @@ namespace IO {
 
     namespace Definition {
         enum class SensorType {
-            None,
-            PixelLight,
-            PhotoResistor,
-            ServoMotor,
-            DeattachedServoMotor,
-            Motor,
+            None = 0,
+            PixelLight = 1,
+            PhotoResistor = 2,
+            ServoMotor = 3,
+            DeattachedServoMotor = 4,
+            Motor = 5,
         };
     }
     struct NSensor {
