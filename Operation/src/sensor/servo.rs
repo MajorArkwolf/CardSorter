@@ -1,22 +1,33 @@
-use crate::sensor::AnalogIo;
+use crate::{
+    job_queue::{AsyncSerial, SerialHandle, SerialMutex},
+    sensor::AnalogIo,
+};
+use async_trait::async_trait;
+use color_eyre::eyre::Result;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub struct Servo {
-    pin: u8
+    port: SerialMutex,
+    pin: u8,
 }
 
 impl Servo {
-    pub fn new(pin: u8) -> Result<Self> {
-        todo!("Implement setting this up on the arduino");
-        Servo{pin}.into()
+    pub async fn new(port: SerialHandle, pin: u8) -> Self {
+        let port = Arc::new(Mutex::new(port));
+        Self { port, pin }
     }
 }
 
+#[async_trait]
 impl AnalogIo for Servo {
-    fn get() -> Result<u8> {
-
+    async fn get(&self) -> Result<u8> {
+        //serial.digital_read(13);
+        todo!()
     }
 
-    fn set(value: u8) -> Result<()> {
-        
+    async fn set(&self, value: u8) -> Result<()> {
+        //serial.digital_write(13, i);
+        todo!()
     }
 }

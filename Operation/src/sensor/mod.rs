@@ -1,11 +1,15 @@
 pub mod servo;
+use async_trait::async_trait;
+use color_eyre::eyre::Result;
 
+#[async_trait]
 trait DigitalIo {
-    fn get() -> Result<bool>;
-    fn set(value: bool) -> Result<()>;
+    async fn get(&self) -> Result<bool>;
+    async fn set(&self, value: bool) -> Result<()>;
 }
 
+#[async_trait]
 trait AnalogIo {
-    fn get() -> Result<u8>;
-    fn set(value: u8) -> Result<()>;
+    async fn get(&self) -> Result<u8>;
+    async fn set(&self, value: u8) -> Result<()>;
 }
