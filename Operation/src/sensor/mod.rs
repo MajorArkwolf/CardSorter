@@ -3,13 +3,13 @@ use async_trait::async_trait;
 use color_eyre::eyre::Result;
 
 #[async_trait]
-trait DigitalIo {
-    async fn get(&self) -> Result<bool>;
-    async fn set(&self, value: bool) -> Result<()>;
+pub trait DigitalIo {
+    async fn get(&mut self) -> Result<bool>;
+    async fn set(&mut self, value: bool) -> Result<()>;
 }
 
 #[async_trait]
-trait AnalogIo {
-    async fn get(&self) -> Result<u8>;
-    async fn set(&self, value: u8) -> Result<()>;
+pub trait AnalogIo {
+    async fn get(&mut self) -> Result<i32>;
+    async fn set(&mut self, value: i32) -> Result<()>;
 }
