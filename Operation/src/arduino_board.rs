@@ -12,8 +12,8 @@ pub struct ArduinoBoard<T: Read + Write + ?Sized> {
 }
 
 impl<T: Read + Write + ?Sized> Clone for ArduinoBoard<T> {
-    fn clone(&self) -> ArduinoBoard<T> {
-        ArduinoBoard {
+    fn clone(&self) -> Self {
+        Self {
             board: self.board.clone(),
         }
     }

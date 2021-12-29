@@ -1,4 +1,5 @@
 pub mod motor;
+pub mod motor_controller;
 pub mod servo;
 use std::io::{Read, Write};
 
