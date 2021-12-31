@@ -1,0 +1,51 @@
+{
+    "boards": [
+        {
+            "id": 0,
+            "identifier": "COM4",
+            "comm_type": {
+                "Serial": {
+                    "baud_rate": 9600
+                }
+            }
+        }
+    ],
+    "sensors": [
+        {
+            "sensor": {
+                "Servo": {
+                    "id": 1,
+                    "pin": {
+                        "Pin": 8
+                    }
+                }
+            },
+            "board_id": 1
+        },
+        {
+            "sensor": {
+                "PhotoResistor": {
+                    "id": 1,
+                    "pin": {
+                        "Analog": 4
+                    }
+                }
+            },
+            "board_id": 1
+        },
+        {
+            "sensor": {
+                "MotorController": {
+                    "id": 1,
+                    "pins": [
+                        4,
+                        5,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "board_id": 2
+        }
+    ]
+}

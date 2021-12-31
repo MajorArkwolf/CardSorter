@@ -1,12 +1,14 @@
-use crate::{arduino_board::ArduinoBoard, sensor::AnalogIo};
 use async_trait::async_trait;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use firmata::Firmata;
+use serde::{Deserialize, Serialize};
 use std::{
     io::{Read, Write},
     sync::Arc,
 };
 use tokio::{sync::Mutex, task};
+
+use super::IOSensor;
 
 const MOTOR_A_PINS_INDEX: [usize; 2] = [0, 1];
 const MOTOR_B_PINS_INDEX: [usize; 2] = [2, 3];
@@ -25,26 +27,23 @@ pub enum Movement {
     Reverse,
 }
 
-#[derive(Clone, Debug)]
-pub struct MotorController<T: Read + Write + ?Sized> {
-    board: ArduinoBoard<T>,
-    pins: [i32; 4],
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct MotorController {
+    id: u32,
+    pins: [u8; 4],
 }
 
-impl<T: Read + Write + ?Sized> MotorController<T> {
-    pub async fn create(board: ArduinoBoard<T>, pins: [i32; 4]) -> Result<Self> {
-        for pin in pins {
-            board
-                .board
-                .lock()
-                .await
-                .set_pin_mode(pin, firmata::OUTPUT)
-                .wrap_err_with(|| "failed to create motor controller")?;
-        }
-        Ok(Self { board, pins })
+impl MotorController {
+    pub fn create(id: u32, pins: [u8; 4]) -> Self {
+        Self { id, pins }
     }
 
-    pub async fn set_motor(&mut self, motor: Motor, movement: Movement) -> Result<()> {
+    pub async fn set_motor<T: Read + Write>(
+        &mut self,
+        board: &mut firmata::Board<T>,
+        motor: Motor,
+        movement: Movement,
+    ) -> Result<()> {
         let pins = match motor {
             Motor::A => [
                 self.pins[MOTOR_A_PINS_INDEX[0]],
@@ -63,9 +62,23 @@ impl<T: Read + Write + ?Sized> MotorController<T> {
             Movement::Forward => MOTOR_FORWARD,
             Movement::Reverse => MOTOR_REVERSE,
         };
-        let mut x = self.board.board.lock().await;
         for (i, pin) in pins.iter().enumerate() {
-            x.digital_write(*pin, digital_assignment[i]);
+            board.digital_write(firmata::PinId::Digital(*pin), digital_assignment[i]);
+        }
+        Ok(())
+    }
+}
+
+impl IOSensor for MotorController {
+    fn get_id(&self) -> u32 {
+        self.id
+    }
+
+    fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        for pin in self.pins {
+            board
+                .set_pin_mode(firmata::PinId::Digital(pin), firmata::OutputMode::OUTPUT)
+                .wrap_err_with(|| "failed to create motor controller")?;
         }
         Ok(())
     }
