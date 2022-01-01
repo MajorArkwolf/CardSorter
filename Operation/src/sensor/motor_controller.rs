@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
 };
 use tokio::{sync::Mutex, task};
+use tracing::{debug, error, info};
 
 use super::IOSensor;
 
@@ -75,6 +76,7 @@ impl IOSensor for MotorController {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        debug!("registering motor controller: {:?}", self);
         for pin in self.pins {
             board
                 .set_pin_mode(firmata::PinId::Digital(pin), firmata::OutputMode::OUTPUT)

@@ -32,7 +32,7 @@ impl<T: Read + Write> ArduinoBoard<T> {
             .board
             .lock()
             .await
-            .read_and_decode_message(0, 10)
+            .read()
             .wrap_err_with(|| "failed to update board")
         {
             Ok(_) => Ok(()),

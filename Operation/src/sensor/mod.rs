@@ -16,7 +16,7 @@ pub enum Sensor {
     PhotoResistor(photo_resistor::PhotoResistor),
 }
 
-trait IOSensor {
+pub trait IOSensor {
     fn get_id(&self) -> u32;
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()>;
 }

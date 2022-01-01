@@ -1,11 +1,11 @@
 {
     "boards": [
         {
-            "id": 0,
-            "identifier": "COM4",
+            "id": 1,
+            "identifier": "passenger.ino",
             "comm_type": {
                 "Serial": {
-                    "baud_rate": 9600
+                    "baud_rate": 57600
                 }
             }
         }
@@ -45,7 +45,7 @@
                     ]
                 }
             },
-            "board_id": 2
+            "board_id": 1
         }
     ]
 }

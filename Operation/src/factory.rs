@@ -15,7 +15,6 @@ use std::{
     sync::Arc,
 };
 
-use tokio::sync::Mutex;
 use tracing::{debug, error, info};
 
 use serde::{Deserialize, Serialize};
@@ -24,12 +23,6 @@ use serde::{Deserialize, Serialize};
 enum CommunicationType {
     Serial(SerialTemplate),
     Ethernet(EthernetTemplate),
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-enum Pin {
-    Analog(u8),
-    Digital(u8),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -58,9 +51,7 @@ fn generate_board(template: BoardTemplate) -> Result<BoardTypes> {
     }
 }
 
-fn generate_sensor(template: SensorTemplate) {}
-
-pub fn generate_system() -> Result<()> {
+pub fn generate_system() -> Result<BoardContainer> {
     // Load our temp structure in to begin construction
     let mut file = File::open("./system.json")?;
     let mut contents = String::new();
@@ -73,9 +64,10 @@ pub fn generate_system() -> Result<()> {
         let board = generate_board(template_board).wrap_err_with(|| "failed to generate board")?;
         boards.push(BoardWrapper::new(id, board));
     }
+
     for sensor in template.sensors {
-        match boards.iter().find(|x| *x.id() == sensor.board_id) {
-            Some(mut v) => v.sensors.push(),
+        match boards.iter_mut().find(|x| *x.id() == sensor.board_id) {
+            Some(v) => v.add_sensor(sensor.sensor),
             None => {
                 return Err(eyre!(
                     "fail to find a board with board id {}, required for sensor {:?}",
@@ -83,10 +75,10 @@ pub fn generate_system() -> Result<()> {
                     sensor.sensor,
                 ));
             }
-        }
+        };
     }
     info!("Found {} boards that were setup succesfully.", boards.len());
-    Ok(())
+    Ok(BoardContainer::create(boards))
 }
 
 pub fn generate_mock_json() -> Result<()> {

@@ -24,6 +24,7 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             Ok(x) => x,
             Err(_) => continue,
         };
+        p.clear(tokio_serial::ClearBuffer::All)?;
         let mut temp_board = firmata::Board::new(p);
         temp_board.populate_board_info()?;
         let board_name = temp_board.firmware_name();

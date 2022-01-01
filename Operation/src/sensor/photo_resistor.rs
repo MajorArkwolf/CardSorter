@@ -7,6 +7,7 @@ use std::{
     sync::Arc,
 };
 use tokio::{sync::Mutex, task};
+use tracing::{debug, error, info};
 
 use super::IOSensor;
 
@@ -42,6 +43,7 @@ impl IOSensor for PhotoResistor {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        debug!("registering photo_resistor: {:?}", self);
         board
             .set_pin_mode(self.pin, firmata::OutputMode::ANALOG)
             .wrap_err_with(|| "failed to create servo")
