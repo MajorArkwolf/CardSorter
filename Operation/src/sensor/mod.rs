@@ -2,18 +2,40 @@ pub mod motor;
 pub mod motor_controller;
 pub mod photo_resistor;
 pub mod servo;
-use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
+use tracing::Subscriber;
 
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+use crate::subscriber;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Sensor {
     Servo(servo::Servo),
     MotorController(motor_controller::MotorController),
     Motor(motor::Motor),
     PhotoResistor(photo_resistor::PhotoResistor),
+}
+
+impl Sensor {
+    pub fn get_id(&self) -> u32 {
+        match self {
+            Sensor::Servo(v) => v.get_id(),
+            Sensor::MotorController(v) => v.get_id(),
+            Sensor::Motor(v) => v.get_id(),
+            Sensor::PhotoResistor(v) => v.get_id(),
+        }
+    }
+
+    pub fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        match self {
+            Sensor::Servo(v) => v.register(board),
+            Sensor::MotorController(v) => v.register(board),
+            Sensor::Motor(v) => v.register(board),
+            Sensor::PhotoResistor(v) => v.register(board),
+        }
+    }
 }
 
 pub trait IOSensor {

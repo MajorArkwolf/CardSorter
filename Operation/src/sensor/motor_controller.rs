@@ -64,7 +64,7 @@ impl MotorController {
             Movement::Reverse => MOTOR_REVERSE,
         };
         for (i, pin) in pins.iter().enumerate() {
-            board.digital_write(firmata::PinId::Digital(*pin), digital_assignment[i]);
+            board.digital_write(firmata::PinId::Digital(*pin), digital_assignment[i])?;
         }
         Ok(())
     }
@@ -82,6 +82,7 @@ impl IOSensor for MotorController {
                 .set_pin_mode(firmata::PinId::Digital(pin), firmata::OutputMode::OUTPUT)
                 .wrap_err_with(|| "failed to create motor controller")?;
         }
+        board.digital_write(firmata::PinId::Digital(4), 1)?;
         Ok(())
     }
 }

@@ -2,7 +2,7 @@
     "boards": [
         {
             "id": 1,
-            "identifier": "passenger.ino",
+            "identifier": "sketch_aug26a.ino",
             "comm_type": {
                 "Serial": {
                     "baud_rate": 57600
@@ -25,9 +25,9 @@
         {
             "sensor": {
                 "PhotoResistor": {
-                    "id": 1,
+                    "id": 2,
                     "pin": {
-                        "Analog": 4
+                        "Analog": 0
                     }
                 }
             },
@@ -36,7 +36,7 @@
         {
             "sensor": {
                 "MotorController": {
-                    "id": 1,
+                    "id": 3,
                     "pins": [
                         4,
                         5,

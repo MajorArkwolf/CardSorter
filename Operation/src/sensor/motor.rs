@@ -23,7 +23,7 @@ impl Motor {
     }
 
     async fn get<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<bool> {
-        if board.get_physical_pin(self.pin)?.value > 0 {
+        if board.get_physical_pin(self.pin)? > 0 {
             return Ok(true);
         } else {
             return Ok(false);

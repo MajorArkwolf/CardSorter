@@ -27,16 +27,16 @@ impl<T: Read + Write> ArduinoBoard<T> {
         Self { board }
     }
 
-    pub async fn update(&mut self) -> Result<()> {
-        match self
-            .board
-            .lock()
-            .await
-            .read()
-            .wrap_err_with(|| "failed to update board")
-        {
-            Ok(_) => Ok(()),
-            Err(_) => Ok(()),
-        }
-    }
+    //pub async fn update(&mut self) -> Result<()> {
+    //    match self
+    //        .board
+    //        .lock()
+    //        .await
+    //        .read()
+    //        .wrap_err_with(|| "failed to update board")
+    //    {
+    //        Ok(_) => Ok(()),
+    //        Err(_) => Ok(()),
+    //    }
+    //}
 }

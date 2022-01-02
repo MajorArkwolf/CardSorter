@@ -4,15 +4,12 @@ use board::{
     serial_board::generate_serial_board,
 };
 use board::{BoardContainer, BoardTypes, BoardWrapper};
-use color_eyre::eyre::{eyre, Context, ContextCompat, Result};
+use color_eyre::eyre::{eyre, Context, Result};
 use sensor::{motor_controller, photo_resistor, servo, Sensor};
+use std::io::Read;
 use std::{
     fs::{self, File},
     vec,
-};
-use std::{
-    io::{Read, Write},
-    sync::Arc,
 };
 
 use tracing::{debug, error, info};
@@ -32,13 +29,13 @@ struct BoardTemplate {
     comm_type: CommunicationType,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct SensorTemplate {
     sensor: Sensor,
     board_id: u32,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct SystemTemplate {
     boards: Vec<BoardTemplate>,
     sensors: Vec<SensorTemplate>,
@@ -52,20 +49,39 @@ fn generate_board(template: BoardTemplate) -> Result<BoardTypes> {
 }
 
 pub fn generate_system() -> Result<BoardContainer> {
+    info!("Beginning system generation...");
     // Load our temp structure in to begin construction
     let mut file = File::open("./system.json")?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     let template: SystemTemplate = serde_json::from_str(&contents)?;
-    info!("generating boards");
+
     let mut boards: Vec<BoardWrapper> = vec![];
+
+    // Generate the boards we will be interfacing with
+    info!("Generating boards...");
     for template_board in template.boards {
+        if boards.iter().any(|x| *x.id() == template_board.id) {
+            return Err(eyre!("board id already exists, {:?}", template_board));
+        }
         let id = template_board.id;
         let board = generate_board(template_board).wrap_err_with(|| "failed to generate board")?;
         boards.push(BoardWrapper::new(id, board));
     }
-
+    info!("Generating boards complete.");
+    info!("Generating sensors.");
+    // Generate the sensors we will be working with
     for sensor in template.sensors {
+        let id_exists = boards.iter().any(|x| {
+            x.sensors()
+                .iter()
+                .any(|y| y.get_id() == sensor.sensor.get_id())
+        });
+
+        if id_exists {
+            return Err(eyre!("sensor id already exists, {:?}", sensor));
+        }
+
         match boards.iter_mut().find(|x| *x.id() == sensor.board_id) {
             Some(v) => v.add_sensor(sensor.sensor),
             None => {
@@ -77,6 +93,7 @@ pub fn generate_system() -> Result<BoardContainer> {
             }
         };
     }
+    info!("Generating sensors complete.");
     info!("Found {} boards that were setup succesfully.", boards.len());
     Ok(BoardContainer::create(boards))
 }
