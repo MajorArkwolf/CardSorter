@@ -117,6 +117,7 @@ impl IOSensor for Servo {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct ServoPublisher {
     publisher: Publisher<i32>,
 }
@@ -127,6 +128,7 @@ impl ServoPublisher {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct ServoSubscriber {
     subscriber: Subscriber<i32>,
 }

@@ -1,3 +1,5 @@
+use crate::subscriber;
+use async_channel::{Receiver, Sender};
 use async_trait::async_trait;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use firmata::Firmata;
@@ -6,6 +8,7 @@ use std::{
     io::{Read, Write},
     sync::Arc,
 };
+use subscriber::{Publisher, Subscriber};
 use tokio::{sync::Mutex, task};
 use tracing::{debug, error, info};
 
@@ -17,26 +20,53 @@ const MOTOR_FORWARD: [i32; 2] = [1, 0];
 const MOTOR_REVERSE: [i32; 2] = [0, 1];
 const MOTOR_STOP: [i32; 2] = [0, 0];
 
+#[derive(Clone, Debug, Copy)]
 pub enum Motor {
     A,
     B,
 }
-
+#[derive(Clone, Debug, Copy)]
 pub enum Movement {
     Stop,
     Forward,
     Reverse,
 }
 
+impl Default for Movement {
+    fn default() -> Self {
+        Movement::Stop
+    }
+}
+#[derive(Clone, Debug, Copy)]
+pub struct MotorControllerMessage {
+    motor: Motor,
+    movement: Movement,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MotorController {
     id: u32,
     pins: [u8; 4],
+    #[serde(skip)]
+    last_a_value: Movement,
+    #[serde(skip)]
+    last_b_value: Movement,
+    #[serde(skip)]
+    tx_array: Vec<Sender<MotorControllerMessage>>,
+    #[serde(skip)]
+    rx_array: Vec<Receiver<MotorControllerMessage>>,
 }
 
 impl MotorController {
     pub fn create(id: u32, pins: [u8; 4]) -> Self {
-        Self { id, pins }
+        Self {
+            id,
+            pins,
+            last_a_value: Movement::default(),
+            last_b_value: Movement::default(),
+            tx_array: vec![],
+            rx_array: vec![],
+        }
     }
 
     pub async fn set_motor<T: Read + Write>(
@@ -68,6 +98,10 @@ impl MotorController {
         }
         Ok(())
     }
+
+    pub fn subscriber(&mut self) {}
+
+    pub fn publisher(&mut self) {}
 }
 
 impl IOSensor for MotorController {
@@ -84,5 +118,25 @@ impl IOSensor for MotorController {
         }
         board.digital_write(firmata::PinId::Digital(4), 1)?;
         Ok(())
+    }
+}
+#[derive(Clone, Debug)]
+struct MotorControllerSubscriber {
+    subscriber: Subscriber<MotorControllerMessage>,
+}
+
+impl MotorControllerSubscriber {
+    pub async fn get(&mut self) -> Result<MotorControllerMessage> {
+        self.subscriber.get().await
+    }
+}
+
+pub struct MotorControllerPublisher {
+    publisher: Publisher<MotorControllerMessage>,
+}
+
+impl MotorControllerPublisher {
+    pub async fn set(&mut self, value: MotorControllerMessage) -> Result<()> {
+        self.publisher.set(value).await
     }
 }

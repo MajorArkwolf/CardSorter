@@ -58,6 +58,7 @@ async fn main() -> Result<()> {
         //debug!("Beginning data update.");
         //debug!("Attempting to find message.");
         let x = sub.get().await?;
+        println!("Photo: {}", x);
 
         if dur.elapsed() > std::time::Duration::from_secs(3) {
             i += 90;

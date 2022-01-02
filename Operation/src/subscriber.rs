@@ -2,6 +2,7 @@ use async_channel::{Receiver, Sender};
 use color_eyre::eyre::{eyre, Context, Result};
 use tracing::debug;
 
+#[derive(Clone, Debug)]
 pub struct Subscriber<T: Copy> {
     rx: Receiver<T>,
     value: T,
@@ -24,6 +25,7 @@ impl<T: Copy> Subscriber<T> {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Publisher<T: Copy> {
     tx: Sender<T>,
 }
