@@ -35,37 +35,17 @@ impl Servo {
         }
     }
 
-    pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        for channel in self.rx_array.iter_mut() {
-            let value = match channel.try_recv() {
-                Ok(v) => v,
-                Err(e) => match e {
-                    async_channel::TryRecvError::Empty => continue,
-                    async_channel::TryRecvError::Closed => continue,
-                },
-            };
-            board.digital_write(self.pin, value)?;
-        }
-
-        let new_value = self.get(board).await?;
-        if new_value != self.value {
-            for channel in self.tx_array.iter_mut() {
-                match channel.try_send(new_value) {
-                    Ok(_) => continue,
-                    Err(e) => match e {
-                        async_channel::TrySendError::Full(_) => continue,
-                        async_channel::TrySendError::Closed(_) => continue,
-                    },
-                }
-            }
-            self.value = new_value;
-        }
-
-        Ok(())
-    }
-
     pub async fn get<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<i32> {
         Ok(board.get_physical_pin(self.pin)?.value)
+    }
+
+    pub fn publisher(&mut self) -> ServoPublisher {
+        let (tx, rx) = async_channel::bounded::<i32>(20);
+        self.rx_array.push(rx);
+
+        ServoPublisher {
+            publisher: Publisher::create(tx),
+        }
     }
 
     pub async fn set<T: Read + Write>(
@@ -74,6 +54,52 @@ impl Servo {
         value: i32,
     ) -> Result<()> {
         board.analog_write(self.pin, value)?;
+        Ok(())
+    }
+
+    pub fn subscribe(&mut self) -> ServoSubscriber {
+        let (tx, rx) = async_channel::bounded::<i32>(20);
+        self.tx_array.push(tx);
+
+        ServoSubscriber {
+            subscriber: Subscriber::create(rx, self.value),
+        }
+    }
+
+    pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        for channel in self.rx_array.iter_mut() {
+            let value = match channel.try_recv() {
+                Ok(v) => v,
+                Err(e) => match e {
+                    async_channel::TryRecvError::Empty => continue,
+
+                    async_channel::TryRecvError::Closed => {
+                        debug!("servo publisher closed the channel.");
+                        continue;
+                    }
+                },
+            };
+            board.analog_write(self.pin, value)?;
+        }
+
+        let new_value = self.get(board).await?;
+        if new_value != self.value {
+            for channel in self.tx_array.iter_mut() {
+                match channel.try_send(new_value) {
+                    Ok(_) => continue,
+                    Err(e) => match e {
+                        async_channel::TrySendError::Full(_) => {
+                            debug!("queue is full to servo subscriber")
+                        }
+                        async_channel::TrySendError::Closed(_) => {
+                            debug!("subscriber has closed their connection")
+                        }
+                    },
+                }
+            }
+            self.value = new_value;
+        }
+
         Ok(())
     }
 }

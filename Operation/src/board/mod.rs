@@ -58,7 +58,7 @@ impl BoardWrapper {
         temp_board.poll(2)?;
         for sensor in self.sensors.iter_mut() {
             match sensor {
-                Sensor::Servo(_) => continue,
+                Sensor::Servo(v) => v.update(&mut *temp_board).await?,
                 Sensor::MotorController(_) => continue,
                 Sensor::Motor(_) => continue,
                 Sensor::PhotoResistor(v) => v.update(&mut *temp_board).await?,

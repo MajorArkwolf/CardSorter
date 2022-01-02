@@ -56,8 +56,8 @@ impl PhotoResistor {
         Ok(val)
     }
 
-    pub async fn subscribe(&mut self) -> PhotoResistorSubscriber {
-        let (tx, rx) = async_channel::bounded::<i32>(1);
+    pub fn subscribe(&mut self) -> PhotoResistorSubscriber {
+        let (tx, rx) = async_channel::bounded::<i32>(20);
         self.tx_array.push(tx);
 
         PhotoResistorSubscriber {
