@@ -43,6 +43,12 @@ pub struct MotorControllerMessage {
     movement: Movement,
 }
 
+impl MotorControllerMessage {
+    pub fn create(motor: Motor, movement: Movement) -> Self {
+        Self { motor, movement }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MotorController {
     id: u32,
@@ -51,8 +57,6 @@ pub struct MotorController {
     last_a_value: Movement,
     #[serde(skip)]
     last_b_value: Movement,
-    #[serde(skip)]
-    tx_array: Vec<Sender<MotorControllerMessage>>,
     #[serde(skip)]
     rx_array: Vec<Receiver<MotorControllerMessage>>,
 }
@@ -64,13 +68,38 @@ impl MotorController {
             pins,
             last_a_value: Movement::default(),
             last_b_value: Movement::default(),
-            tx_array: vec![],
             rx_array: vec![],
         }
     }
 
+    pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
+        let mut result: Option<MotorControllerMessage> = None;
+        for channel in self.rx_array.iter_mut() {
+            match channel.try_recv() {
+                Ok(v) => {
+                    result = Some(v);
+                    break;
+                }
+                Err(e) => match e {
+                    async_channel::TryRecvError::Empty => continue,
+
+                    async_channel::TryRecvError::Closed => {
+                        debug!("servo publisher closed the channel.");
+                        continue;
+                    }
+                },
+            };
+        }
+
+        if let Some(v) = result {
+            self.set_motor(board, v.motor, v.movement).await?
+        }
+
+        Ok(())
+    }
+
     pub async fn set_motor<T: Read + Write>(
-        &mut self,
+        &self,
         board: &mut firmata::Board<T>,
         motor: Motor,
         movement: Movement,
@@ -99,9 +128,14 @@ impl MotorController {
         Ok(())
     }
 
-    pub fn subscriber(&mut self) {}
+    pub fn publisher(&mut self) -> MotorControllerPublisher {
+        let (tx, rx) = async_channel::bounded::<MotorControllerMessage>(20);
+        self.rx_array.push(rx);
 
-    pub fn publisher(&mut self) {}
+        MotorControllerPublisher {
+            publisher: Publisher::create(tx),
+        }
+    }
 }
 
 impl IOSensor for MotorController {
@@ -121,16 +155,6 @@ impl IOSensor for MotorController {
     }
 }
 #[derive(Clone, Debug)]
-struct MotorControllerSubscriber {
-    subscriber: Subscriber<MotorControllerMessage>,
-}
-
-impl MotorControllerSubscriber {
-    pub async fn get(&mut self) -> Result<MotorControllerMessage> {
-        self.subscriber.get().await
-    }
-}
-
 pub struct MotorControllerPublisher {
     publisher: Publisher<MotorControllerMessage>,
 }

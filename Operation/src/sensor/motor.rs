@@ -1,3 +1,4 @@
+use async_channel::{Receiver, Sender};
 use color_eyre::eyre::{Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
@@ -8,18 +9,26 @@ use std::{
 use tokio::{sync::Mutex, task};
 use tracing::{debug, error, info};
 
+use crate::subscriber::Publisher;
+
 use super::IOSensor;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Motor {
     id: u32,
     pin: firmata::PinId,
+    #[serde(skip)]
+    rx_array: Vec<Receiver<bool>>,
 }
 
 impl Motor {
     pub fn create(id: u32, pin: u8) -> Self {
         let pin = firmata::PinId::Digital(pin);
-        Self { id, pin }
+        Self {
+            id,
+            pin,
+            rx_array: vec![],
+        }
     }
 
     async fn get<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<bool> {
@@ -38,6 +47,15 @@ impl Motor {
         board.digital_write(self.pin, value as i32)?;
         Ok(())
     }
+
+    fn publisher(&mut self) -> MotorPublisher {
+        let (tx, rx) = async_channel::bounded::<bool>(20);
+        self.rx_array.push(rx);
+
+        MotorPublisher {
+            publisher: Publisher::create(tx),
+        }
+    }
 }
 
 impl IOSensor for Motor {
@@ -50,5 +68,16 @@ impl IOSensor for Motor {
         board
             .set_pin_mode(self.pin, firmata::OutputMode::ANALOG)
             .wrap_err_with(|| "failed to create servo")
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct MotorPublisher {
+    publisher: Publisher<bool>,
+}
+
+impl MotorPublisher {
+    pub async fn set(&mut self, value: bool) -> Result<()> {
+        self.publisher.set(value).await
     }
 }

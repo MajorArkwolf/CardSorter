@@ -2,6 +2,7 @@ pub mod motor;
 pub mod motor_controller;
 pub mod photo_resistor;
 pub mod servo;
+use enum_as_inner::EnumAsInner;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use tracing::Subscriber;
@@ -10,7 +11,7 @@ use color_eyre::eyre::{eyre, Result};
 
 use crate::subscriber;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumAsInner)]
 pub enum Sensor {
     Servo(servo::Servo),
     MotorController(motor_controller::MotorController),

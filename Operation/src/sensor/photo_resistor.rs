@@ -81,7 +81,7 @@ impl IOSensor for PhotoResistor {
             .wrap_err_with(|| "failed to register photoresistor for updates")
     }
 }
-
+#[derive(Clone, Debug)]
 pub struct PhotoResistorSubscriber {
     subscriber: Subscriber<i32>,
 }

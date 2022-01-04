@@ -14,12 +14,8 @@ impl<T: Copy> Subscriber<T> {
     }
 
     pub async fn get(&mut self) -> Result<T> {
-        loop {
-            let x = self.rx.try_recv();
-            match x {
-                Ok(v) => self.value = v,
-                Err(_) => break,
-            }
+        while !self.rx.is_empty() {
+            self.value = self.rx.recv().await?;
         }
         Ok(self.value)
     }

@@ -4,11 +4,15 @@ pub mod circuit;
 pub mod factory;
 pub mod sensor;
 pub mod subscriber;
+use circuit::circuit_constructor::construct_capture;
+use circuit::circuit_controller::CircuitController;
 use color_eyre::eyre::{eyre, Context, ContextCompat, Error, Result};
 use firmata::{Firmata, OutputMode, PinId};
 use std::{process::Output, sync::Arc, thread};
 use tokio::sync::Mutex;
 use tracing::{debug, error, info};
+
+use crate::circuit::circuit_constructor;
 //use std::time::{Duration, Instant};
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -18,27 +22,15 @@ async fn main() -> Result<()> {
     info!("System startup initiated");
     let board_array = Arc::new(Mutex::new(factory::generate_system()?));
 
-    let mut sub = {
+    {
         let mut mutex = board_array.lock().await;
         assert!(mutex.get_board_vec_size() != 0);
         mutex.connect_sensors().await?;
+    }
 
-        match mutex.get_sensor(2)? {
-            sensor::Sensor::Servo(_) => todo!(),
-            sensor::Sensor::MotorController(_) => todo!(),
-            sensor::Sensor::Motor(_) => todo!(),
-            sensor::Sensor::PhotoResistor(v) => v.subscribe(),
-        }
-    };
-
-    let mut publ = {
+    let circuit_controller: CircuitController = {
         let mut mutex = board_array.lock().await;
-        match mutex.get_sensor(1)? {
-            sensor::Sensor::Servo(v) => v.publisher(),
-            sensor::Sensor::MotorController(_) => todo!(),
-            sensor::Sensor::Motor(_) => todo!(),
-            sensor::Sensor::PhotoResistor(_) => todo!(),
-        }
+        circuit_constructor::construct_circuit(&mut mutex)?
     };
 
     info!("System startup complete, beginning run process");
@@ -50,27 +42,15 @@ async fn main() -> Result<()> {
         Ok::<(), Error>(())
     });
 
-    let mut i = 0;
-
-    let mut dur = std::time::Instant::now();
-
-    loop {
-        //debug!("Beginning data update.");
-        //debug!("Attempting to find message.");
-        let x = sub.get().await?;
-        println!("Photo: {}", x);
-
-        if dur.elapsed() > std::time::Duration::from_secs(3) {
-            i += 90;
-            if i > 180 {
-                i = 0;
-            }
-            debug!("hello :3 uwu");
-            publ.set(i).await?;
-            dur = std::time::Instant::now();
+    let join = tokio::task::spawn(async move {
+        circuit_controller.start().await?;
+        loop {
+            circuit_controller.update().await?;
         }
-    }
-    join.await??;
+        Ok::<(), Error>(())
+    });
+
+    //join.await??;
     info!("System shutdown successfully");
     Ok(())
 }
