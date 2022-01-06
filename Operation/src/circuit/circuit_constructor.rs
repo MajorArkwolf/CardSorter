@@ -3,14 +3,9 @@ use std::vec;
 
 use crate::board;
 use crate::circuit;
-use crate::sensor;
-use crate::sensor::motor_controller::MotorControllerPublisher;
-use crate::sensor::servo::Servo;
 use board::BoardContainer;
 use circuit::{capture::Capture, feeder::Feeder};
-use color_eyre::eyre::{eyre, Context, ContextCompat, Result};
-use sensor::motor_controller::MotorController;
-use sensor::photo_resistor::PhotoResistor;
+use color_eyre::eyre::Result;
 use tokio::sync::Mutex;
 
 use super::circuit_controller::CircuitController;
@@ -19,7 +14,7 @@ use super::CircuitState;
 
 pub fn construct_feeder(boards: &mut BoardContainer) -> Result<Feeder> {
     let motor_cont = boards
-        .get_sensor(2)?
+        .get_sensor(3)?
         .as_motor_controller_mut()
         .unwrap()
         .publisher();
@@ -48,7 +43,7 @@ pub fn construct_capture(boards: &mut BoardContainer) -> Result<Capture> {
 }
 
 pub fn construct_circuit(boards: &mut BoardContainer) -> Result<CircuitController> {
-    let circuits: Vec<Arc<Mutex<Box<dyn Circuit>>>> = vec![
+    let circuits: Vec<Arc<Mutex<Box<dyn Circuit + Send>>>> = vec![
         Arc::new(Mutex::new(Box::new(construct_feeder(boards)?))),
         Arc::new(Mutex::new(Box::new(construct_capture(boards)?))),
     ];

@@ -1,23 +1,22 @@
 use async_channel::{Receiver, Sender};
 use color_eyre::eyre::{eyre, Context, Result};
-use tracing::debug;
+use tracing::error;
 
 #[derive(Clone, Debug)]
 pub struct Subscriber<T: Copy> {
     rx: Receiver<T>,
-    value: T,
 }
 
 impl<T: Copy> Subscriber<T> {
-    pub fn create(rx: Receiver<T>, value: T) -> Self {
-        Self { rx, value }
+    pub fn create(rx: Receiver<T>) -> Self {
+        Self { rx }
     }
 
     pub async fn get(&mut self) -> Result<T> {
-        while !self.rx.is_empty() {
-            self.value = self.rx.recv().await?;
-        }
-        Ok(self.value)
+        self.rx
+            .recv()
+            .await
+            .wrap_err_with(|| "failed to recv update")
     }
 }
 
@@ -34,7 +33,10 @@ impl<T: Copy> Publisher<T> {
     pub async fn set(&mut self, value: T) -> Result<()> {
         match self.tx.send(value).await {
             Ok(_) => Ok(()),
-            Err(_) => Err(eyre!("failed to send message to the subscriber")),
+            Err(_) => {
+                error!("publisher failed to send message");
+                Err(eyre!("failed to send message to the subscriber"))
+            }
         }
     }
 }

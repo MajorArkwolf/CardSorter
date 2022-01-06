@@ -1,11 +1,18 @@
 use crate::circuit;
 use crate::sensor;
-use crate::sensor::motor_controller;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Context, ContextCompat, Result};
-use sensor::motor_controller::{Motor, MotorControllerMessage, Movement};
+use color_eyre::eyre::{eyre, Result};
+use color_eyre::Report;
 use sensor::{photo_resistor::PhotoResistorSubscriber, servo::ServoPublisher};
+use tracing::{error, info};
+use tracing::{event, instrument, Level};
+
+enum CaptureStates {
+    TakePicture,
+    RunOCR,
+    ReleaseCard,
+}
 
 #[derive(Clone, Debug)]
 pub struct Capture {
@@ -22,10 +29,12 @@ impl Circuit for Capture {
         self.id
     }
 
+    #[instrument]
     async fn get_state(&self) -> CircuitState {
         self.state
     }
 
+    #[instrument]
     async fn change_state(&mut self, next_state: CircuitState) -> Result<()> {
         if self.state == CircuitState::Stopped {
             return Err(eyre!("tried to set from stopped"));
@@ -34,6 +43,7 @@ impl Circuit for Capture {
         Ok(())
     }
 
+    #[instrument]
     async fn update(&mut self) {
         match self.state {
             CircuitState::Ready => self.process_ready(),
@@ -63,10 +73,13 @@ impl Capture {
         }
     }
 
+    #[instrument]
     fn process_ready(&mut self) {
         self.state = CircuitState::Running;
+        info!("capture system started");
     }
 
+    #[instrument]
     async fn process_running(&mut self) {
         let value = self.photo_resistor.get().await;
         let value = match value {
@@ -74,13 +87,28 @@ impl Capture {
             Err(_) => return,
         };
         if value < self.trigger {
-            self.servo.set(90).await;
-            tokio::time::sleep(std::time::Duration::from_millis(3000));
-            self.servo.set(0).await;
-            tokio::time::sleep(std::time::Duration::from_millis(1500));
+            info!("capture system dispending card");
+            let result = self.servo.set(90).await;
+            self.handle_result(result);
+            tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
+            let result = self.servo.set(0).await;
+            self.handle_result(result);
+            tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
             self.state = CircuitState::Waiting;
+            info!("capture system moving to waiting");
         }
     }
 
     fn process_waiting(&mut self) {}
+
+    #[instrument]
+    fn handle_result(&mut self, result: Result<(), Report>) {
+        match result {
+            Ok(_) => {}
+            Err(_) => {
+                error!("error discovered, stopping self {:?}", self);
+                self.state = CircuitState::Stopped
+            }
+        }
+    }
 }

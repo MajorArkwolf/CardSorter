@@ -4,8 +4,6 @@ use std::{
     sync::Arc,
 };
 
-use color_eyre::eyre::{eyre, Result, WrapErr};
-use firmata::Firmata;
 use tokio::sync::Mutex;
 pub type BoardHandle<T> = Arc<Mutex<firmata::Board<T>>>;
 

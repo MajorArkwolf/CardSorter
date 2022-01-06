@@ -1,11 +1,13 @@
 use crate::circuit;
 use crate::sensor;
-use crate::sensor::motor_controller;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Context, ContextCompat, Result};
+use color_eyre::eyre::{eyre, Result};
 use sensor::motor_controller::{Motor, MotorControllerMessage, Movement};
 use sensor::{motor_controller::MotorControllerPublisher, photo_resistor::PhotoResistorSubscriber};
+use tracing::debug;
+use tracing::info;
+use tracing::{event, instrument, Level};
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -18,12 +20,17 @@ pub struct Feeder {
 
 #[async_trait]
 impl Circuit for Feeder {
+    #[instrument]
     async fn get_id(&self) -> u32 {
         self.id
     }
+
+    #[instrument]
     async fn get_state(&self) -> CircuitState {
         self.state
     }
+
+    #[instrument]
     async fn change_state(&mut self, next_state: CircuitState) -> Result<()> {
         if self.state == CircuitState::Stopped {
             return Err(eyre!("tried to set from stopped"));
@@ -31,6 +38,8 @@ impl Circuit for Feeder {
         self.state = next_state;
         Ok(())
     }
+
+    #[instrument]
     async fn update(&mut self) {
         match self.state {
             CircuitState::Ready => self.process_ready().await,
@@ -59,14 +68,19 @@ impl Feeder {
         }
     }
 
+    #[instrument]
     async fn process_ready(&mut self) {
-        self.motor_cont
+        let result = self
+            .motor_cont
             .set(MotorControllerMessage::create(Motor::A, Movement::Forward))
             .await;
-
-        self.state = CircuitState::Running;
+        match result {
+            Ok(_) => self.state = CircuitState::Running,
+            Err(_) => self.state = CircuitState::Stopped,
+        }
     }
 
+    #[instrument]
     async fn process_running(&mut self) {
         let value = self.photo_resistor.get().await;
         let value = match value {
@@ -74,12 +88,22 @@ impl Feeder {
             Err(_) => return,
         };
         if value > self.trigger {
-            self.motor_cont
+            info!(
+                "trigger `{}` value `{}` hit, moving to waiting",
+                self.trigger, value
+            );
+            let result = self
+                .motor_cont
                 .set(MotorControllerMessage::create(Motor::A, Movement::Stop))
                 .await;
-            self.state == CircuitState::Waiting;
+
+            match result {
+                Ok(_) => self.state = CircuitState::Waiting,
+                Err(_) => self.state = CircuitState::Stopped,
+            }
         }
     }
 
+    #[instrument]
     fn process_waiting(&mut self) {}
 }

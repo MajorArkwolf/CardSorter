@@ -1,13 +1,10 @@
-use async_channel::{Receiver, Sender};
+use async_channel::Receiver;
 use color_eyre::eyre::{Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
-use std::{
-    io::{Read, Write},
-    sync::Arc,
-};
-use tokio::{sync::Mutex, task};
-use tracing::{debug, error, info};
+use std::io::{Read, Write};
+use tracing::debug;
+use tracing::{event, instrument, Level};
 
 use crate::subscriber::Publisher;
 
@@ -33,9 +30,9 @@ impl Motor {
 
     async fn get<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<bool> {
         if board.get_physical_pin(self.pin)?.value > 0 {
-            return Ok(true);
+            Ok(true)
         } else {
-            return Ok(false);
+            Ok(false)
         }
     }
 
@@ -64,7 +61,6 @@ impl IOSensor for Motor {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        debug!("registering motor: {:?}", self);
         board
             .set_pin_mode(self.pin, firmata::OutputMode::ANALOG)
             .wrap_err_with(|| "failed to create servo")
@@ -77,6 +73,7 @@ pub struct MotorPublisher {
 }
 
 impl MotorPublisher {
+    #[instrument]
     pub async fn set(&mut self, value: bool) -> Result<()> {
         self.publisher.set(value).await
     }

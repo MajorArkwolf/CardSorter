@@ -1,15 +1,12 @@
-use crate::board::{network::SerialTemplate, BoardWrapper};
+use crate::board::network::SerialTemplate;
 
 use super::{arduino_board::ArduinoBoard, BoardTypes};
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use firmata::Firmata;
-use std::{
-    io::{Read, Write},
-    sync::Arc,
-};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio_serial::SerialPort;
-use tracing::{debug, error, info};
+use tracing::error;
 
 pub fn generate(port: Box<dyn SerialPort>) -> ArduinoBoard<Box<dyn SerialPort>> {
     ArduinoBoard::new(Arc::new(Mutex::new(firmata::Board::new(port))))

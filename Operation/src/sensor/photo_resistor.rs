@@ -1,16 +1,12 @@
 use crate::subscriber;
 use async_channel::Sender;
-use async_trait::async_trait;
-use color_eyre::eyre::{eyre, Result, WrapErr};
+use color_eyre::eyre::{Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
-use std::{
-    io::{Read, Write},
-    sync::Arc,
-};
+use std::io::{Read, Write};
 use subscriber::Subscriber;
-use tokio::{sync::Mutex, task};
 use tracing::{debug, error, info};
+use tracing::{event, instrument, Level};
 
 use super::IOSensor;
 
@@ -38,10 +34,18 @@ impl PhotoResistor {
     pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
         let new_value = self.get(board).await?;
         if new_value != self.value {
-            for comm in self.tx_array.iter() {
-                match comm.send(new_value).await {
+            self.broadcast_to_subscribers(new_value).await?;
+        }
+        Ok(())
+    }
+
+    #[instrument]
+    async fn broadcast_to_subscribers(&mut self, value: i32) -> Result<()> {
+        for comm in self.tx_array.iter() {
+            if !comm.is_full() && !comm.is_closed() {
+                match comm.send(value).await {
                     Ok(_) => continue,
-                    Err(_) => info!(
+                    Err(_) => error!(
                         "failed to send update to subscriber from photoresistor {}",
                         self.id
                     ),
@@ -61,7 +65,7 @@ impl PhotoResistor {
         self.tx_array.push(tx);
 
         PhotoResistorSubscriber {
-            subscriber: Subscriber::create(rx, self.value),
+            subscriber: Subscriber::create(rx),
         }
     }
 }
@@ -72,7 +76,6 @@ impl IOSensor for PhotoResistor {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        debug!("registering photo_resistor: {:?}", self);
         board
             .set_pin_mode(self.pin, firmata::OutputMode::ANALOG)
             .wrap_err_with(|| "failed to create photoresistor")?;

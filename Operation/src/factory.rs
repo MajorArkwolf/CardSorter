@@ -12,7 +12,7 @@ use std::{
     vec,
 };
 
-use tracing::{debug, error, info};
+use tracing::info;
 
 use serde::{Deserialize, Serialize};
 

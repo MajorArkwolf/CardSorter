@@ -1,4 +1,4 @@
-use color_eyre::eyre::{eyre, Context, ContextCompat, Result};
+use color_eyre::eyre::Result;
 pub mod capture;
 pub mod circuit_constructor;
 pub mod circuit_controller;
@@ -13,7 +13,7 @@ pub enum CircuitState {
 }
 
 #[async_trait]
-trait Circuit {
+pub trait Circuit {
     async fn get_id(&self) -> u32;
     async fn get_state(&self) -> CircuitState;
     async fn change_state(&mut self, next_state: CircuitState) -> Result<()>;

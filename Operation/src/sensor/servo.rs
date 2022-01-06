@@ -1,12 +1,12 @@
 use crate::subscriber;
 use async_channel::{Receiver, Sender};
-use async_trait::async_trait;
 use color_eyre::eyre::{Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use subscriber::{Publisher, Subscriber};
-use tracing::{debug, error, info};
+use tracing::{debug, error};
+use tracing::{event, instrument, Level};
 
 use super::IOSensor;
 
@@ -62,44 +62,49 @@ impl Servo {
         self.tx_array.push(tx);
 
         ServoSubscriber {
-            subscriber: Subscriber::create(rx, self.value),
+            subscriber: Subscriber::create(rx),
         }
     }
 
     pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        for channel in self.rx_array.iter_mut() {
-            let value = match channel.try_recv() {
-                Ok(v) => v,
-                Err(e) => match e {
-                    async_channel::TryRecvError::Empty => continue,
-
-                    async_channel::TryRecvError::Closed => {
-                        debug!("servo publisher closed the channel.");
+        for channel in self.rx_array.iter() {
+            if !channel.is_empty() && !channel.is_closed() {
+                let value = match channel.recv().await {
+                    Ok(v) => v,
+                    Err(_) => {
+                        error!("recv error when listening to publishers");
                         continue;
                     }
-                },
-            };
-            board.analog_write(self.pin, value)?;
+                };
+                board.analog_write(self.pin, value)?;
+            }
         }
 
         let new_value = self.get(board).await?;
         if new_value != self.value {
-            for channel in self.tx_array.iter_mut() {
-                match channel.try_send(new_value) {
-                    Ok(_) => continue,
-                    Err(e) => match e {
-                        async_channel::TrySendError::Full(_) => {
-                            debug!("queue is full to servo subscriber")
-                        }
-                        async_channel::TrySendError::Closed(_) => {
-                            debug!("subscriber has closed their connection")
-                        }
-                    },
-                }
-            }
+            self.broadcast_to_subscribers(new_value).await?;
             self.value = new_value;
         }
 
+        Ok(())
+    }
+
+    #[instrument]
+    async fn broadcast_to_subscribers(&mut self, value: i32) -> Result<()> {
+        for comm in self.tx_array.iter() {
+            if !comm.is_full() && !comm.is_closed() {
+                match comm.send(value).await {
+                    Ok(_) => continue,
+                    Err(_) => {
+                        error!(
+                            "failed to send update to subscriber from photoresistor {}",
+                            self.id
+                        );
+                        comm.close();
+                    }
+                }
+            }
+        }
         Ok(())
     }
 }
@@ -110,7 +115,6 @@ impl IOSensor for Servo {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        debug!("registering servo: {:?}", self);
         board
             .set_pin_mode(self.pin, firmata::OutputMode::SERVO)
             .wrap_err_with(|| "failed to create servo")
@@ -123,6 +127,7 @@ pub struct ServoPublisher {
 }
 
 impl ServoPublisher {
+    #[instrument]
     pub async fn set(&mut self, value: i32) -> Result<()> {
         self.publisher.set(value).await
     }
@@ -134,6 +139,7 @@ pub struct ServoSubscriber {
 }
 
 impl ServoSubscriber {
+    #[instrument]
     pub async fn get(&mut self) -> Result<i32> {
         self.subscriber.get().await
     }

@@ -1,25 +1,28 @@
-use color_eyre::owo_colors::OwoColorize;
 use firmata::Firmata;
 use getset::Getters;
 use std::collections::HashMap;
 use std::vec;
 use tokio_serial::SerialPort;
-
 pub mod arduino_board;
 pub mod network;
 pub mod serial_board;
-use crate::sensor;
-use crate::sensor::IOSensor;
 use crate::sensor::Sensor;
-use crate::subscriber;
-use color_eyre::eyre::{eyre, Result, WrapErr};
-use tracing::{debug, error, info};
+use color_eyre::eyre::{eyre, Result};
+use tracing::debug;
 
 pub enum BoardTypes {
     SerialBoard(arduino_board::ArduinoBoard<Box<dyn SerialPort>>),
 }
 
-#[derive(Getters)]
+impl core::fmt::Debug for BoardTypes {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::SerialBoard(arg0) => f.debug_tuple("SerialBoard").finish(),
+        }
+    }
+}
+
+#[derive(Getters, Debug)]
 #[getset(get = "pub")]
 pub struct BoardWrapper {
     id: u32,
@@ -59,7 +62,7 @@ impl BoardWrapper {
         for sensor in self.sensors.iter_mut() {
             match sensor {
                 Sensor::Servo(v) => v.update(&mut *temp_board).await?,
-                Sensor::MotorController(_) => continue,
+                Sensor::MotorController(v) => v.update(&mut *temp_board).await?,
                 Sensor::Motor(_) => continue,
                 Sensor::PhotoResistor(v) => v.update(&mut *temp_board).await?,
             }
@@ -68,6 +71,7 @@ impl BoardWrapper {
     }
 }
 
+#[derive(Debug)]
 pub struct BoardContainer {
     pub boards: Vec<BoardWrapper>,
     id_map: HashMap<u32, u32>,

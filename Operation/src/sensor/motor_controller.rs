@@ -1,16 +1,12 @@
 use crate::subscriber;
-use async_channel::{Receiver, Sender};
-use async_trait::async_trait;
+use async_channel::Receiver;
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
-use std::{
-    io::{Read, Write},
-    sync::Arc,
-};
-use subscriber::{Publisher, Subscriber};
-use tokio::{sync::Mutex, task};
-use tracing::{debug, error, info};
+use std::io::{Read, Write};
+use subscriber::Publisher;
+use tracing::debug;
+use tracing::{event, instrument, Level};
 
 use super::IOSensor;
 
@@ -54,10 +50,6 @@ pub struct MotorController {
     id: u32,
     pins: [u8; 4],
     #[serde(skip)]
-    last_a_value: Movement,
-    #[serde(skip)]
-    last_b_value: Movement,
-    #[serde(skip)]
     rx_array: Vec<Receiver<MotorControllerMessage>>,
 }
 
@@ -66,8 +58,6 @@ impl MotorController {
         Self {
             id,
             pins,
-            last_a_value: Movement::default(),
-            last_b_value: Movement::default(),
             rx_array: vec![],
         }
     }
@@ -75,20 +65,15 @@ impl MotorController {
     pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
         let mut result: Option<MotorControllerMessage> = None;
         for channel in self.rx_array.iter_mut() {
-            match channel.try_recv() {
-                Ok(v) => {
-                    result = Some(v);
-                    break;
-                }
-                Err(e) => match e {
-                    async_channel::TryRecvError::Empty => continue,
-
-                    async_channel::TryRecvError::Closed => {
-                        debug!("servo publisher closed the channel.");
-                        continue;
+            if !channel.is_empty() && !channel.is_closed() {
+                match channel.recv().await {
+                    Ok(v) => {
+                        result = Some(v);
+                        break;
                     }
-                },
-            };
+                    Err(_) => channel.close(),
+                };
+            }
         }
 
         if let Some(v) = result {
@@ -144,7 +129,6 @@ impl IOSensor for MotorController {
     }
 
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        debug!("registering motor controller: {:?}", self);
         for pin in self.pins {
             board
                 .set_pin_mode(firmata::PinId::Digital(pin), firmata::OutputMode::OUTPUT)
@@ -160,6 +144,7 @@ pub struct MotorControllerPublisher {
 }
 
 impl MotorControllerPublisher {
+    #[instrument]
     pub async fn set(&mut self, value: MotorControllerMessage) -> Result<()> {
         self.publisher.set(value).await
     }
