@@ -13,10 +13,16 @@ impl<T: Copy> Subscriber<T> {
     }
 
     pub async fn get(&mut self) -> Result<T> {
-        self.rx
-            .recv()
-            .await
-            .wrap_err_with(|| "failed to recv update")
+        loop {
+            let y = self
+                .rx
+                .recv()
+                .await
+                .wrap_err_with(|| "failed to recv update");
+            if self.rx.is_empty() {
+                return y;
+            }
+        }
     }
 }
 
