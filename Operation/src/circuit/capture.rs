@@ -8,10 +8,12 @@ use sensor::{photo_resistor::PhotoResistorSubscriber, servo::ServoPublisher};
 use tracing::{error, info};
 use tracing::{event, instrument, Level};
 
+#[derive(Clone, Copy, Debug, PartialEq)]
 enum CaptureStates {
     TakePicture,
     RunOCR,
     ReleaseCard,
+    Finished,
 }
 
 #[derive(Clone, Debug)]
@@ -21,6 +23,7 @@ pub struct Capture {
     servo: ServoPublisher,
     photo_resistor: PhotoResistorSubscriber,
     trigger: i32,
+    internal_state: CaptureStates,
 }
 
 #[async_trait]
@@ -70,38 +73,54 @@ impl Capture {
             servo,
             photo_resistor,
             trigger,
+            internal_state: CaptureStates::TakePicture,
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     fn process_ready(&mut self) {
         self.state = CircuitState::Running;
+        self.internal_state = CaptureStates::TakePicture;
         info!("capture system started");
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     async fn process_running(&mut self) {
         let value = self.photo_resistor.get().await;
         let value = match value {
             Ok(v) => v,
             Err(_) => return,
         };
-        if value < self.trigger {
-            info!("capture system dispending card");
-            let result = self.servo.set(90).await;
-            self.handle_result(result);
-            tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
-            let result = self.servo.set(0).await;
-            self.handle_result(result);
-            tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
-            self.state = CircuitState::Waiting;
-            info!("capture system moving to waiting");
+        // Take Picture
+        match self.internal_state {
+            CaptureStates::TakePicture => {
+                self.internal_state = CaptureStates::RunOCR;
+            }
+            CaptureStates::RunOCR => {
+                self.internal_state = CaptureStates::ReleaseCard;
+            }
+            CaptureStates::ReleaseCard => {
+                self.internal_state = CaptureStates::Finished;
+                info!("capture system dispending card");
+                let result = self.servo.set(90).await;
+                self.handle_result(result);
+                tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
+            }
+            CaptureStates::Finished => {
+                if value > self.trigger {
+                    let result = self.servo.set(0).await;
+                    self.handle_result(result);
+                    tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+                    self.state = CircuitState::Waiting;
+                    info!("capture system moving to waiting");
+                }
+            }
         }
     }
 
     fn process_waiting(&mut self) {}
 
-    #[instrument]
+    #[instrument(skip_all)]
     fn handle_result(&mut self, result: Result<(), Report>) {
         match result {
             Ok(_) => {}

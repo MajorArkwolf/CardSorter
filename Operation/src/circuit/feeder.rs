@@ -20,12 +20,12 @@ pub struct Feeder {
 
 #[async_trait]
 impl Circuit for Feeder {
-    #[instrument]
+    #[instrument(skip_all)]
     async fn get_id(&self) -> u32 {
         self.id
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     async fn get_state(&self) -> CircuitState {
         self.state
     }
@@ -39,7 +39,7 @@ impl Circuit for Feeder {
         Ok(())
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     async fn update(&mut self) {
         match self.state {
             CircuitState::Ready => self.process_ready().await,
@@ -68,7 +68,7 @@ impl Feeder {
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     async fn process_ready(&mut self) {
         let result = self
             .motor_cont
@@ -80,14 +80,14 @@ impl Feeder {
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     async fn process_running(&mut self) {
         let value = self.photo_resistor.get().await;
         let value = match value {
             Ok(v) => v,
             Err(_) => return,
         };
-        if value > self.trigger {
+        if value < self.trigger {
             info!(
                 "trigger `{}` value `{}` hit, moving to waiting",
                 self.trigger, value
@@ -104,6 +104,6 @@ impl Feeder {
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     fn process_waiting(&mut self) {}
 }

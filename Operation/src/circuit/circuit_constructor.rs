@@ -28,7 +28,7 @@ pub fn construct_feeder(boards: &mut BoardContainer) -> Result<Feeder> {
         CircuitState::Waiting,
         motor_cont,
         photo,
-        200,
+        500,
     ))
 }
 
@@ -39,7 +39,7 @@ pub fn construct_capture(boards: &mut BoardContainer) -> Result<Capture> {
         .as_photo_resistor_mut()
         .unwrap()
         .subscribe();
-    Ok(Capture::create(1, CircuitState::Waiting, servo, photo, 200))
+    Ok(Capture::create(1, CircuitState::Waiting, servo, photo, 500))
 }
 
 pub fn construct_circuit(boards: &mut BoardContainer) -> Result<CircuitController> {
