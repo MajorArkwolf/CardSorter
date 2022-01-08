@@ -7,7 +7,9 @@ pub mod sensor;
 pub mod subscriber;
 use circuit::circuit_controller::CircuitController;
 use color_eyre::eyre::{Error, Result};
-use std::sync::Arc;
+use network::CardData;
+use serde::{de::IntoDeserializer, Deserialize, Serialize};
+use std::{io::Read, net, sync::Arc, vec};
 use tokio::sync::Mutex;
 use tracing::{debug, info};
 
@@ -16,8 +18,8 @@ use crate::circuit::circuit_constructor;
 #[tokio::main]
 async fn main() -> Result<()> {
     color_eyre::install()?;
-    //tracing_subscriber::fmt::init();
-    console_subscriber::init();
+    tracing_subscriber::fmt::init();
+    //console_subscriber::init();
     info!("System startup initiated");
     let board_array = Arc::new(Mutex::new(factory::generate_system()?));
 

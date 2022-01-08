@@ -1,0 +1,98 @@
+01/08/2022 05:11:34 PM Began running MTG sorting listening server...
+01/08/2022 05:11:38 PM Using proactor: IocpProactor
+01/08/2022 05:12:09 PM New connection opened from ('127.0.0.1', 55366).
+01/08/2022 05:12:10 PM Request recieved, processing.
+01/08/2022 05:12:11 PM Request completed, sending response.
+01/08/2022 05:15:49 PM Began running MTG sorting listening server...
+01/08/2022 05:15:53 PM Using proactor: IocpProactor
+01/08/2022 05:16:06 PM New connection opened from ('127.0.0.1', 60472).
+01/08/2022 05:16:06 PM Request recieved, processing.
+01/08/2022 05:16:08 PM Request completed, sending response.
+01/08/2022 05:16:08 PM Request recieved, processing.
+01/08/2022 05:16:08 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:08 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:08 PM Request completed, sending response.
+01/08/2022 05:16:08 PM Connection has been closed.
+01/08/2022 05:16:08 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:12 PM New connection opened from ('127.0.0.1', 60482).
+01/08/2022 05:16:13 PM Request recieved, processing.
+01/08/2022 05:16:14 PM Request completed, sending response.
+01/08/2022 05:16:14 PM Request recieved, processing.
+01/08/2022 05:16:14 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:14 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:14 PM Request completed, sending response.
+01/08/2022 05:16:14 PM Connection has been closed.
+01/08/2022 05:16:14 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:18 PM New connection opened from ('127.0.0.1', 60488).
+01/08/2022 05:16:19 PM Request recieved, processing.
+01/08/2022 05:16:20 PM Request completed, sending response.
+01/08/2022 05:16:20 PM Request recieved, processing.
+01/08/2022 05:16:20 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:20 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:20 PM Request completed, sending response.
+01/08/2022 05:16:20 PM Connection has been closed.
+01/08/2022 05:16:20 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:25 PM New connection opened from ('127.0.0.1', 60493).
+01/08/2022 05:16:25 PM Request recieved, processing.
+01/08/2022 05:16:27 PM Request completed, sending response.
+01/08/2022 05:16:27 PM Request recieved, processing.
+01/08/2022 05:16:27 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:27 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:27 PM Request completed, sending response.
+01/08/2022 05:16:27 PM Connection has been closed.
+01/08/2022 05:16:27 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:33 PM New connection opened from ('127.0.0.1', 60498).
+01/08/2022 05:16:33 PM Request recieved, processing.
+01/08/2022 05:16:35 PM Request completed, sending response.
+01/08/2022 05:16:35 PM Request recieved, processing.
+01/08/2022 05:16:35 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:35 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:35 PM Request completed, sending response.
+01/08/2022 05:16:35 PM Connection has been closed.
+01/08/2022 05:16:35 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:46 PM New connection opened from ('127.0.0.1', 60511).
+01/08/2022 05:16:46 PM Request recieved, processing.
+01/08/2022 05:16:47 PM Request completed, sending response.
+01/08/2022 05:16:47 PM Request recieved, processing.
+01/08/2022 05:16:47 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:47 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:47 PM Request completed, sending response.
+01/08/2022 05:16:47 PM Connection has been closed.
+01/08/2022 05:16:47 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:57 PM New connection opened from ('127.0.0.1', 60520).
+01/08/2022 05:16:57 PM Request recieved, processing.
+01/08/2022 05:16:59 PM Request completed, sending response.
+01/08/2022 05:16:59 PM Request recieved, processing.
+01/08/2022 05:16:59 PM 
+Traceback (most recent call last):
+  File "A:\Coding\CardSorter\OCRScripts/main.py", line 83, in handle_request
+    if request['CardData'] is not None:
+TypeError: string indices must be integers
+01/08/2022 05:16:59 PM Writer is closing, terminating this connection.
+01/08/2022 05:16:59 PM Request completed, sending response.
+01/08/2022 05:16:59 PM Connection has been closed.
+01/08/2022 05:16:59 PM Writer is closing, terminating this connection.

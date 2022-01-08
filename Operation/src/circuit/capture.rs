@@ -1,8 +1,11 @@
+use std::io::Read;
+
 use crate::circuit;
+use crate::network::{CardData, Network, PictureFormat, Request};
 use crate::sensor;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{eyre, Context, Error, Result, WrapErr};
 use color_eyre::Report;
 use sensor::{photo_resistor::PhotoResistorSubscriber, servo::ServoPublisher};
 use tracing::{error, info};
@@ -16,7 +19,7 @@ enum CaptureStates {
     Finished,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Capture {
     id: u32,
     state: CircuitState,
@@ -86,17 +89,60 @@ impl Capture {
 
     #[instrument(skip_all)]
     async fn process_running(&mut self) {
-        let value = self.photo_resistor.get().await;
-        let value = match value {
-            Ok(v) => v,
-            Err(_) => return,
-        };
         // Take Picture
         match self.internal_state {
             CaptureStates::TakePicture => {
                 self.internal_state = CaptureStates::RunOCR;
             }
             CaptureStates::RunOCR => {
+                let contents = {
+                    let mut file =
+                        match std::fs::File::open("A:\\Coding\\CardSorter\\TestData\\image.jpg")
+                            .wrap_err_with(|| "failed to open file when sending image")
+                        {
+                            Ok(v) => v,
+                            Err(e) => {
+                                self.process_error(e);
+                                return;
+                            }
+                        };
+                    let mut data: Vec<u8> = Vec::new();
+                    match file
+                        .read_to_end(&mut data)
+                        .wrap_err_with(|| "failed to read data in")
+                    {
+                        Ok(_) => {}
+                        Err(e) => {
+                            self.process_error(e);
+                            return;
+                        }
+                    }
+                    data
+                };
+                let network_ocr = Network::connect("127.0.0.1:10000").await;
+                match network_ocr {
+                    Ok(mut network) => {
+                        let card = Request::CardData(CardData {
+                            pic_format: PictureFormat::Png,
+                            data: contents,
+                        });
+                        network.send(card).await.unwrap();
+                        let resp = network.recv().await.unwrap();
+                        if resp.error == 0 {
+                            network.send(Request::EndConnection).await.unwrap();
+                            self.internal_state = CaptureStates::ReleaseCard;
+                        } else {
+                            error!("OCR network returned {}, stopping circuit", resp.error);
+                            self.state = CircuitState::Stopped;
+                            return;
+                        }
+                    }
+                    Err(_) => {
+                        self.state = CircuitState::Stopped;
+                        self.internal_state = CaptureStates::Finished;
+                        return;
+                    }
+                }
                 self.internal_state = CaptureStates::ReleaseCard;
             }
             CaptureStates::ReleaseCard => {
@@ -107,6 +153,11 @@ impl Capture {
                 tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
             }
             CaptureStates::Finished => {
+                let value = self.photo_resistor.get().await;
+                let value = match value {
+                    Ok(v) => v,
+                    Err(_) => return,
+                };
                 if value > self.trigger {
                     let result = self.servo.set(0).await;
                     self.handle_result(result);
@@ -129,5 +180,10 @@ impl Capture {
                 self.state = CircuitState::Stopped
             }
         }
+    }
+
+    fn process_error(&mut self, error: Error) {
+        error!("Error occured in capture: {}", error);
+        self.state = CircuitState::Stopped;
     }
 }

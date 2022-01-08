@@ -1,31 +1,39 @@
-use color_eyre::eyre::Context;
+use color_eyre::eyre::{eyre, Context};
 use color_eyre::Result;
 use futures::sink::SinkExt;
-use rmp_serde::{Deserializer, Serializer};
+use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpStream, ToSocketAddrs};
 use tokio_util::codec::{BytesCodec, Framed, LengthDelimitedCodec};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
-enum PictureFormat {
+#[serde(tag = "type")]
+pub enum PictureFormat {
     Jpg,
     Png,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct CardData {
-    format: PictureFormat,
-    data: Vec<u8>,
+pub struct CardData {
+    pub pic_format: PictureFormat,
+    pub data: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-enum Request {
+pub enum Request {
     CardData(CardData),
+    EndConnection,
 }
 
-struct Network {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Response {
+    pub error: i32,
+    pub value: i32,
+}
+
+#[derive(Debug)]
+pub struct Network {
     framed_stream: Framed<TcpStream, LengthDelimitedCodec>,
 }
 
@@ -39,9 +47,22 @@ impl Network {
     }
 
     pub async fn send(&mut self, payload: Request) -> Result<()> {
-        let mut buf = Vec::new();
-        payload.serialize(&mut Serializer::new(&mut buf))?;
+        let buf = serde_pickle::to_vec(&payload, Default::default())?;
         self.framed_stream.send(buf.into()).await?;
         Ok(())
+    }
+
+    pub async fn recv(&mut self) -> Result<Response> {
+        if let Some(buf) = self.framed_stream.next().await {
+            match buf {
+                Ok(v) => {
+                    let response: Response = serde_pickle::from_slice(&v, Default::default())
+                        .wrap_err_with(|| "failed to deserialise response")?;
+                    return Ok(response);
+                }
+                Err(_) => return Err(eyre!("failed to generate a response from stream")),
+            }
+        }
+        Err(eyre!("something went wrong when recieving a response"))
     }
 }
