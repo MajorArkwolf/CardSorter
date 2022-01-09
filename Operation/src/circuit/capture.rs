@@ -95,35 +95,12 @@ impl Capture {
                 self.internal_state = CaptureStates::RunOCR;
             }
             CaptureStates::RunOCR => {
-                let contents = {
-                    let mut file =
-                        match std::fs::File::open("A:\\Coding\\CardSorter\\TestData\\image.jpg")
-                            .wrap_err_with(|| "failed to open file when sending image")
-                        {
-                            Ok(v) => v,
-                            Err(e) => {
-                                self.process_error(e);
-                                return;
-                            }
-                        };
-                    let mut data: Vec<u8> = Vec::new();
-                    match file
-                        .read_to_end(&mut data)
-                        .wrap_err_with(|| "failed to read data in")
-                    {
-                        Ok(_) => {}
-                        Err(e) => {
-                            self.process_error(e);
-                            return;
-                        }
-                    }
-                    data
-                };
+                let contents: Vec<u8> = vec![];
                 let network_ocr = Network::connect("127.0.0.1:10000").await;
                 match network_ocr {
                     Ok(mut network) => {
                         let card = Request::CardData(CardData {
-                            pic_format: PictureFormat::Png,
+                            type_of: PictureFormat::TakePicture,
                             data: contents,
                         });
                         network.send(card).await.unwrap();
