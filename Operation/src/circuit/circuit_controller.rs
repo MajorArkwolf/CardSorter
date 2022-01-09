@@ -1,5 +1,5 @@
 use super::{Circuit, CircuitState};
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::error;
@@ -52,6 +52,11 @@ impl CircuitController {
             active_circuit.change_state(CircuitState::Ready).await?;
         } else if curr_state == CircuitState::Stopped {
             error!("Circuit {} has reported a stop.", self.active);
+            for cir in &self.circuit {
+                let mut x = cir.lock().await;
+                x.change_state(CircuitState::Stopped).await?;
+            }
+            return Err(eyre!("circuit controller encounted a circuit that stopped, all other circuits stopped as well"));
         }
         Ok(())
     }
