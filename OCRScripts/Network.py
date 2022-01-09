@@ -1,10 +1,6 @@
 import socket
-import pickle
-
-import socket
 import sys
 import pickle
-from numpy import uint32
 
 
 class Response:
