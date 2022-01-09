@@ -51,7 +51,7 @@ fn generate_board(template: BoardTemplate) -> Result<BoardTypes> {
 pub fn generate_system() -> Result<BoardContainer> {
     info!("Beginning system generation...");
     // Load our temp structure in to begin construction
-    let mut file = File::open("./system.json")?;
+    let mut file = File::open("./system.json").wrap_err_with(||"failed to find system.json file in the root directory")?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
     let template: SystemTemplate = serde_json::from_str(&contents)?;
