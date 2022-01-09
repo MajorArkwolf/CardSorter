@@ -1,7 +1,6 @@
 import display_picture
 from MTGLibrary import *
 from pytesseract import Output
-from MTGFactory import Generate_Magic_Card, Get_Card_From_Bytes
 from Network import *
 from Streams import *
 import logging
@@ -9,35 +8,6 @@ import asyncio
 
 logging.basicConfig(filename='logging.log', filemode='a',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 logging.info('Began running MTG sorting listening server...')
-
-#library = MTGLibrary("A:\\Coding\\MTGSorter\\Data\\default-cards.json")
-#net = Network("127.0.0.1", 10000)
-#net.connect()
-#
-#try:
-#    while True:
-#        data = net.recieve()
-#
-#        image = Get_Card_From_Bytes(data["data"])
-#        card = Generate_Magic_Card(image)
-#
-#        card_search = library.Look_Up_Card(card)
-#        response = Response(0, 1)
-#        print(card_search)
-#        net.send(response)
-#        #gray_img = image_correction.get_grayscale(cropped_image)
-#        ##threshimage = image_correction.thresholding(gray_img, 70, 255)
-#
-#        #d = pytesseract.image_to_data(threshimage, output_type=Output.DICT)
-#        #print(d)
-#
-#
-#        #gray = image_correction.get_grayscale(img)
-#
-#
-#        #display_picture.ShowPicture(card.image)
-#except:
-#    logging.exception('')
 
 library = MTGLibrary("A:\\Coding\\MTGSorter\\Data\\default-cards.json")
 
@@ -71,12 +41,6 @@ class ListeningConnection:
         if is_socket_closed(self.socket) == True or self.connection_active == False:
             logging.info("Connection has been closed.")
             await self.close_connection()
-
-    async def card_request_from_binary(self, request):
-        image = Get_Card_From_Bytes(request["data"])
-        card = Generate_Magic_Card(image)
-        card_search = library.Look_Up_Card(card)
-        return Response(0, 1)
 
     async def handle_request(self, request):
         try:
