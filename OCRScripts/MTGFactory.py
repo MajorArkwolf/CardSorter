@@ -6,10 +6,10 @@ from image_correction import *
 
 MAX_VALID_YEAR = 2022
 MIN_VALID_YEAR = 1988
+TESSERACT_DETECTION_CONFIG = '--psm 3 -l eng'
 
-def Get_Card_From_File(image_location):
-    TESSERACT_DETECTION_CONFIG = '--psm 3 -l eng'
-    return cv2.imread(image_location)
+def Get_Card_From_File(file_location):
+    return cv2.imread(file_location)
 
 def Get_Card_From_Bytes(byte_data):
     bytes_in = bytes(byte_data)
