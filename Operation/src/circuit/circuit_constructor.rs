@@ -23,11 +23,13 @@ pub fn construct_feeder(boards: &mut BoardContainer) -> Result<Feeder> {
         .as_photo_resistor_mut()
         .unwrap()
         .subscribe();
+    let servo = boards.get_sensor(1)?.as_servo_mut().unwrap().publisher();
     Ok(Feeder::create(
         0,
         CircuitState::Waiting,
         motor_cont,
         photo,
+        servo,
         500,
     ))
 }

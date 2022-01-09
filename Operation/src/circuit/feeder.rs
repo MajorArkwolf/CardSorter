@@ -1,5 +1,6 @@
 use crate::circuit;
 use crate::sensor;
+use crate::sensor::servo::ServoPublisher;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
 use color_eyre::eyre::{eyre, Result};
@@ -15,6 +16,7 @@ pub struct Feeder {
     state: CircuitState,
     motor_cont: MotorControllerPublisher,
     photo_resistor: PhotoResistorSubscriber,
+    servo: ServoPublisher,
     trigger: i32,
 }
 
@@ -57,6 +59,7 @@ impl Feeder {
         state: CircuitState,
         motor_cont: MotorControllerPublisher,
         photo_resistor: PhotoResistorSubscriber,
+        servo: ServoPublisher,
         trigger: i32,
     ) -> Self {
         Self {
@@ -64,12 +67,18 @@ impl Feeder {
             state,
             motor_cont,
             photo_resistor,
+            servo,
             trigger,
         }
     }
 
     #[instrument(skip_all)]
     async fn process_ready(&mut self) {
+        let result = self.servo.set(0).await;
+        match result {
+            Ok(_) => self.state = CircuitState::Running,
+            Err(_) => self.state = CircuitState::Stopped,
+        }
         let result = self
             .motor_cont
             .set(MotorControllerMessage::create(Motor::A, Movement::Forward))
