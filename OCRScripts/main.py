@@ -3,6 +3,7 @@ from MTGLibrary import *
 from pytesseract import Output
 from Network import *
 from Streams import *
+from card_request import card_request
 import logging
 import asyncio
 
@@ -46,7 +47,7 @@ class ListeningConnection:
         try:
             if request['CardData'] is not None:
                 request = request['CardData']
-                response = await self.card_request_from_binary(request)
+                response = await card_request(library, request)
                 await send(self.writer, response)
                 return
             elif request['EndConnection'] is not None:
