@@ -10,13 +10,14 @@ use tokio_util::codec::{BytesCodec, Framed, LengthDelimitedCodec};
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "type")]
 pub enum PictureFormat {
-    Jpg,
-    Png,
+    Binary,
+    FileLocation,
+    TakePicture,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CardData {
-    pub pic_format: PictureFormat,
+    pub type_of: PictureFormat,
     pub data: Vec<u8>,
 }
 
