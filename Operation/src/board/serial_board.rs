@@ -20,7 +20,7 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let mut tried = 0;
     let mut skipped = 0;
     for p in ports {
-        let p = match tokio_serial::new(p.port_name, template.baud_rate)
+        let comm = match tokio_serial::new(p.port_name.clone(), template.baud_rate)
             .timeout(time::Duration::from_millis(50))
             .open()
         {
@@ -31,8 +31,8 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             }
         };
         tried += 1;
-        p.clear(tokio_serial::ClearBuffer::All)?;
-        let mut temp_board = firmata::Board::new(p);
+        comm.clear(tokio_serial::ClearBuffer::All)?;
+        let mut temp_board = firmata::Board::new(comm);
         temp_board.populate_board_info()?;
         temp_board.sampling_inerval(std::time::Duration::from_millis(100))?;
         let board_name = temp_board.firmware_name();
@@ -40,8 +40,11 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             let board = ArduinoBoard::new(Arc::new(Mutex::new(temp_board)));
             return Ok(BoardTypes::SerialBoard(board));
         } else {
-            devices_found.push(' ');
+            devices_found.push_str(" \"");
             devices_found.push_str(board_name);
+            devices_found.push('\\');
+            devices_found.push_str(&p.port_name);
+            devices_found.push('\"');
         }
     }
 
