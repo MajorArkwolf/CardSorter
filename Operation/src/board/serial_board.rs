@@ -6,7 +6,7 @@ use core::time;
 use firmata::Firmata;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tokio_serial::SerialPort;
+use tokio_serial::{DataBits, Parity, SerialPort, StopBits};
 use tracing::error;
 
 pub fn generate(port: Box<dyn SerialPort>) -> ArduinoBoard<Box<dyn SerialPort>> {
@@ -20,7 +20,12 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let mut tried = 0;
     let mut skipped = 0;
     for p in ports {
-        let comm = match tokio_serial::new(&p.port_name, template.baud_rate).open() {
+        let comm = match tokio_serial::new(&p.port_name, template.baud_rate)
+            .data_bits(DataBits::Eight)
+            .parity(Parity::None)
+            .stop_bits(StopBits::One)
+            .open()
+        {
             Ok(x) => x,
             Err(_) => {
                 skipped += 1;
