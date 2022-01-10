@@ -27,10 +27,11 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             .open()
         {
             Ok(x) => x,
-            Err(_) => {
+            Err(e) => {
                 skipped += 1;
                 devices_found.push(' ');
                 devices_found.push_str(&p.port_name);
+                devices_found.push_str(&e.description);
                 continue;
             }
         };
