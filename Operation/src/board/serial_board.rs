@@ -2,6 +2,7 @@ use crate::board::network::SerialTemplate;
 
 use super::{arduino_board::ArduinoBoard, BoardTypes};
 use color_eyre::eyre::{eyre, Result, WrapErr};
+use core::time;
 use firmata::Firmata;
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -17,7 +18,10 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let ports =
         tokio_serial::available_ports().wrap_err_with(|| "failed to find any comm ports")?;
     for p in ports {
-        let p = match tokio_serial::new(p.port_name, template.baud_rate).open() {
+        let p = match tokio_serial::new(p.port_name, template.baud_rate)
+            .timeout(time::Duration::from_millis(10))
+            .open()
+        {
             Ok(x) => x,
             Err(_) => continue,
         };
