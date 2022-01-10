@@ -17,14 +17,20 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let mut devices_found: String = String::new();
     let ports =
         tokio_serial::available_ports().wrap_err_with(|| "failed to find any comm ports")?;
+    let mut tried = 0;
+    let mut skipped = 0;
     for p in ports {
         let p = match tokio_serial::new(p.port_name, template.baud_rate)
-            .timeout(time::Duration::from_millis(10))
+            .timeout(time::Duration::from_millis(50))
             .open()
         {
             Ok(x) => x,
-            Err(_) => continue,
+            Err(_) => {
+                skipped += 1;
+                continue;
+            }
         };
+        tried += 1;
         p.clear(tokio_serial::ClearBuffer::All)?;
         let mut temp_board = firmata::Board::new(p);
         temp_board.populate_board_info()?;
@@ -39,6 +45,9 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
         }
     }
 
-    error!("Failed to find `{}`: found `{}`", identifier, devices_found);
+    error!(
+        "Tried: {}, Skipped {}. Failed to find `{}`: found `{}`",
+        tried, skipped, identifier, devices_found
+    );
     Err(eyre!("failed to find board"))
 }
