@@ -20,13 +20,12 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let mut tried = 0;
     let mut skipped = 0;
     for p in ports {
-        let comm = match tokio_serial::new(p.port_name.clone(), template.baud_rate)
-            .timeout(time::Duration::from_millis(50))
-            .open()
-        {
+        let comm = match tokio_serial::new(&p.port_name, template.baud_rate).open() {
             Ok(x) => x,
             Err(_) => {
                 skipped += 1;
+                devices_found.push(' ');
+                devices_found.push_str(&p.port_name);
                 continue;
             }
         };
@@ -40,11 +39,8 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             let board = ArduinoBoard::new(Arc::new(Mutex::new(temp_board)));
             return Ok(BoardTypes::SerialBoard(board));
         } else {
-            devices_found.push_str(" \"");
+            devices_found.push(' ');
             devices_found.push_str(board_name);
-            devices_found.push('\\');
-            devices_found.push_str(&p.port_name);
-            devices_found.push('\"');
         }
     }
 
