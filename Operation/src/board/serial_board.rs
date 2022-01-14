@@ -31,7 +31,7 @@ fn generate_port(port_info: &SerialPortInfo, baud_rate: u32) -> Result<Box<dyn S
     {
         Ok(x) => Ok(x),
         Err(err) => match convert_dir_to_path(&port_info.port_name) {
-            Ok(n) => match tokio_serial::new(&port_info.port_name, baud_rate)
+            Ok(n) => match tokio_serial::new(&n, baud_rate)
                 .data_bits(DataBits::Eight)
                 .parity(Parity::None)
                 .stop_bits(StopBits::One)
