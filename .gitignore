@@ -5,3 +5,8 @@ Cargo.lock
 build/
 CMakePresets.json
 __pycache__
+TestData/
+.gitignore
+.env
+*.json
+*.log

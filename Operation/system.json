@@ -1,0 +1,51 @@
+{
+    "boards": [
+        {
+            "id": 1,
+            "identifier": "sketch_aug26a.ino",
+            "comm_type": {
+                "Serial": {
+                    "baud_rate": 57600
+                }
+            }
+        }
+    ],
+    "sensors": [
+        {
+            "sensor": {
+                "Servo": {
+                    "id": 1,
+                    "pin": {
+                        "Pin": 9
+                    }
+                }
+            },
+            "board_id": 1
+        },
+        {
+            "sensor": {
+                "PhotoResistor": {
+                    "id": 2,
+                    "pin": {
+                        "Analog": 0
+                    }
+                }
+            },
+            "board_id": 1
+        },
+        {
+            "sensor": {
+                "MotorController": {
+                    "id": 3,
+                    "pins": [
+                        4,
+                        5,
+                        0,
+                        0
+                    ]
+                }
+            },
+            "board_id": 1
+        }
+    ]
+}

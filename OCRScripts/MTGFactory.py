@@ -6,10 +6,15 @@ from image_correction import *
 
 MAX_VALID_YEAR = 2022
 MIN_VALID_YEAR = 1988
+TESSERACT_DETECTION_CONFIG = '--psm 3 -l eng'
 
-def Get_Card_Picture(image_location):
-    TESSERACT_DETECTION_CONFIG = '--psm 3 -l eng'
-    return cv2.imread(image_location)
+def Get_Card_From_File(file_location):
+    return cv2.imread(file_location)
+
+def Get_Card_From_Bytes(byte_data):
+    bytes_in = bytes(byte_data)
+    nparr = np.fromstring(bytes_in, np.uint8)
+    return cv2.imdecode(nparr, cv2.IMREAD_ANYCOLOR)
 
 def Prep_Card_For_OCR(image):
     rot = detectAngle(image)
@@ -67,9 +72,7 @@ def Determine_Copyright_Year(image):
 
     return best_guess
 
-def Generate_Magic_Card(image_location):
-    image = Get_Card_Picture(image_location)
-
+def Generate_Magic_Card(image):
     # Setup Card for parsing
     image = Prep_Card_For_OCR(image)
 
