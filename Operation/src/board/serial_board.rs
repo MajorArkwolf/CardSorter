@@ -39,13 +39,14 @@ fn generate_port(port_info: &SerialPortInfo, baud_rate: u32) -> Result<Box<dyn S
             {
                 Ok(v) => Ok(v),
                 Err(e) => Err(eyre!(
-                    "failed to connect to port after changing path path name: {} error: {:?}, previous name was {:?}",
+                    "failed to connect to port after changing path path name: {} error: {:?}, previous name {} and error {:?}",
                     n,
                     e,
+                    port_info.port_name,
                     err
                 )),
             },
-            Err(_) => Err(eyre!("failed to generate a new path name from {:?}", err)),
+            Err(_) => Err(eyre!("failed to generate a new path name from {} {:?}", port_info.port_name, err)),
         },
     }
 }
