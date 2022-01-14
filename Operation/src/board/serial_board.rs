@@ -30,7 +30,7 @@ fn generate_port(port_info: &SerialPortInfo, baud_rate: u32) -> Result<Box<dyn S
         .open()
     {
         Ok(x) => Ok(x),
-        Err(_) => match convert_dir_to_path(&port_info.port_name) {
+        Err(err) => match convert_dir_to_path(&port_info.port_name) {
             Ok(n) => match tokio_serial::new(&port_info.port_name, baud_rate)
                 .data_bits(DataBits::Eight)
                 .parity(Parity::None)
@@ -39,12 +39,13 @@ fn generate_port(port_info: &SerialPortInfo, baud_rate: u32) -> Result<Box<dyn S
             {
                 Ok(v) => Ok(v),
                 Err(e) => Err(eyre!(
-                    "failed to connect to port after changing path path name: {} error: {:?}",
+                    "failed to connect to port after changing path path name: {} error: {:?}, previous name was {:?}",
                     n,
-                    e
+                    e,
+                    err
                 )),
             },
-            Err(_) => Err(eyre!("failed to generate a new path name")),
+            Err(_) => Err(eyre!("failed to generate a new path name from {:?}", err)),
         },
     }
 }
