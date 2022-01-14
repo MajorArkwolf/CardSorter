@@ -3,14 +3,10 @@ name = "card_sorter"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 async-trait = "0.1.52"
 color-eyre = "0.5.11"
-#firmata = {git = "https://github.com/zankich/rust-firmata.git"} possibly buggy
-#firmata = {git = "https://github.com/MajorArkwolf/rust-firmata.git"}
-firmata = {path = "../../rust-firmata"}
+firmata = {git = "https://github.com/MajorArkwolf/rust-firmata.git"}
 tokio = { version = "1.15.0", features = ["full"] }
 tokio-serial = "5.4.1"
 tracing = "0.1.29"
