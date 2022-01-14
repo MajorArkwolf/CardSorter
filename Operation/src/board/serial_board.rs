@@ -50,7 +50,7 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
     let mut tried = 0;
     let mut skipped = 0;
     for p in ports {
-        let comm = match generate_port(&p, template.baud_rate) {
+        let mut comm = match generate_port(&p, template.baud_rate) {
             Ok(v) => v,
             Err(e) => {
                 warn!("Comm port failed: {:?}", e);
@@ -59,7 +59,7 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
             }
         };
         tried += 1;
-        comm.clear(tokio_serial::ClearBuffer::All)?;
+        comm.set_timeout(std::time::Duration::from_secs(1))?;
         let mut temp_board = firmata::Board::new(comm);
         temp_board.populate_board_info()?;
         temp_board.sampling_inerval(std::time::Duration::from_millis(100))?;
