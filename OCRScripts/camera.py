@@ -15,7 +15,7 @@ class Camera:
             self.camera = picamera.PiCamera()
             self.camera.framerate = 24
             self.camera.resolution = (2592, 1944)
-            self.resolution = {}
+            self.resolution = ()
             self.resolution.x = 2592
             self.resolution.y = 1944
             self.camera.rotation = 180
