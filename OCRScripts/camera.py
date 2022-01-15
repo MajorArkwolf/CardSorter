@@ -14,7 +14,7 @@ class Camera:
         if camera_lib_loaded == True:
             self.camera = picamera.PiCamera()
             self.camera.framerate = 24
-            self.camera.resolution (2592, 1944)
+            self.camera.resolution = (2592, 1944)
             self.resolution = {}
             self.resolution.x = 2592
             self.resolution.y = 1944
