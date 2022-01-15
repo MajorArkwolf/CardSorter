@@ -43,7 +43,11 @@ impl Circuit for Capture {
     #[instrument]
     async fn change_state(&mut self, next_state: CircuitState) -> Result<()> {
         if self.state == CircuitState::Stopped {
-            return Err(eyre!("tried to set from stopped"));
+            if next_state != CircuitState::Stopped {
+                return Err(eyre!("tried to set from stopped"));
+            } else {
+                return Ok(());
+            }
         }
         self.state = next_state;
         Ok(())
