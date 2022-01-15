@@ -7,9 +7,7 @@ pub mod sensor;
 pub mod subscriber;
 use circuit::circuit_controller::CircuitController;
 use color_eyre::eyre::{Error, Result};
-use network::CardData;
-use serde::{de::IntoDeserializer, Deserialize, Serialize};
-use std::{io::Read, net, sync::Arc, vec};
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::{debug, info};
 
@@ -35,7 +33,7 @@ async fn main() -> Result<()> {
     };
 
     info!("System startup complete, beginning run process");
-    let join = tokio::task::spawn(async move {
+    let _join = tokio::task::spawn(async move {
         loop {
             let mut data = board_array.lock().await;
             data.update().await?;
