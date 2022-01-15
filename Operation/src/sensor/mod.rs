@@ -1,4 +1,5 @@
-pub mod motor;
+pub mod led_strip;
+//pub mod motor;
 pub mod motor_controller;
 pub mod photo_resistor;
 pub mod servo;
@@ -11,8 +12,8 @@ use std::io::{Read, Write};
 pub enum Sensor {
     Servo(servo::Servo),
     MotorController(motor_controller::MotorController),
-    Motor(motor::Motor),
     PhotoResistor(photo_resistor::PhotoResistor),
+    LedStrip(led_strip::LedStrip),
 }
 
 impl Sensor {
@@ -20,8 +21,8 @@ impl Sensor {
         match self {
             Sensor::Servo(v) => v.get_id(),
             Sensor::MotorController(v) => v.get_id(),
-            Sensor::Motor(v) => v.get_id(),
             Sensor::PhotoResistor(v) => v.get_id(),
+            Sensor::LedStrip(v) => v.get_id(),
         }
     }
 
@@ -29,8 +30,8 @@ impl Sensor {
         match self {
             Sensor::Servo(v) => v.register(board),
             Sensor::MotorController(v) => v.register(board),
-            Sensor::Motor(v) => v.register(board),
             Sensor::PhotoResistor(v) => v.register(board),
+            Sensor::LedStrip(v) => v.register(board),
         }
     }
 }
