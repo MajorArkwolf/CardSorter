@@ -8,7 +8,7 @@ use circuit::{Circuit, CircuitState};
 use color_eyre::eyre::{eyre, Context, Error, Result, WrapErr};
 use color_eyre::Report;
 use sensor::{photo_resistor::PhotoResistorSubscriber, servo::ServoPublisher};
-use tracing::{error, info};
+use tracing::{debug, error, info};
 use tracing::{event, instrument, Level};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -127,11 +127,11 @@ impl Capture {
                 self.internal_state = CaptureStates::ReleaseCard;
             }
             CaptureStates::ReleaseCard => {
-                self.internal_state = CaptureStates::Finished;
                 info!("capture system dispending card");
                 let result = self.servo.set(90).await;
                 self.handle_result(result);
-                tokio::time::sleep(std::time::Duration::from_millis(3000)).await;
+                tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+                self.internal_state = CaptureStates::Finished;
             }
             CaptureStates::Finished => {
                 let value = self.photo_resistor.get().await;
@@ -139,6 +139,7 @@ impl Capture {
                     Ok(v) => v,
                     Err(_) => return,
                 };
+                debug!("Photoresistor: {}", value);
                 if value > self.trigger {
                     let result = self.servo.set(0).await;
                     self.handle_result(result);
