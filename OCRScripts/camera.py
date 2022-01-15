@@ -14,16 +14,18 @@ class Camera:
         if camera_lib_loaded == True:
             self.camera = picamera.PiCamera()
             self.camera.framerate = 24
-            self.camera.resolution.x = 2592
-            self.camera.resolution.y = 1944
+            self.camera.resolution (2592, 1944)
+            self.resolution = {}
+            self.resolution.x = 2592
+            self.resolution.y = 1944
             self.camera.rotation = 180
         self.loaded = camera_lib_loaded
 
     def capture_opencv(self):
         if camera_lib_loaded == True:
-            image = np.empty((self.camera.resolution.y * self.camera.resolution.x * 3), dtype=np.uint8)
+            image = np.empty((self.resolution.y * self.resolution.x * 3), dtype=np.uint8)
             self.camera.capture(image, 'bgr')
-            image = image.reshape((self.camera.resolution.y, self.camera.resolution.x, 3))
+            image = image.reshape((self.resolution.y, self.resolution.x, 3))
             return image
         else:
             return None
