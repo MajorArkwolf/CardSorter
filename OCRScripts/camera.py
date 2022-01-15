@@ -8,7 +8,7 @@ except ModuleNotFoundError as err:
 
 import numpy as np
 import cv2
-p
+
 class Camera:
     def __init__(self):
         if camera_lib_loaded == True:
