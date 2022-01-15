@@ -18,6 +18,7 @@
 - A card is jammed in the distribution system (Kill system)
 - An expensive card has been found (Notify owner)
 
+---
 
 ## Stages
 ### Feeder
@@ -58,6 +59,8 @@ Card is stored into the appropriate containers
 #### Sensors
 - Container full sensor
 
+---
+
 ## Design Concepts
 ### Overseer
 The overseer will manage the state transitions based on a rule system. Each circuit will be able to register itself and its preconditions and post conditions. The overseer will see to it that notifications on other circuits are passed along the chain.
@@ -67,6 +70,8 @@ Each part of the circuit will be modular and inherit from a abstract circuit obj
 
 ### Definitions
 All parts of this project should be able to be configured in an json object and should be expandable to via a form of scription language.
+
+---
 
 ## Hardware
 - 1x Raspberry Pi
