@@ -5,7 +5,7 @@ use color_eyre::eyre::{eyre, Result, WrapErr};
 use firmata::Firmata;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tokio_serial::{DataBits, Parity, SerialPort, SerialPortInfo, StopBits};
+use tokio_serial::{ClearBuffer, DataBits, Parity, SerialPort, SerialPortInfo, StopBits};
 use tracing::{error, warn};
 
 pub fn generate(port: Box<dyn SerialPort>) -> ArduinoBoard<Box<dyn SerialPort>> {
@@ -60,11 +60,10 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
         };
         tried += 1;
         comm.set_timeout(std::time::Duration::from_secs(1))?;
+        comm.flush()?;
+        comm.clear(ClearBuffer::All)?;
         let mut temp_board = firmata::Board::new(comm);
-        match temp_board.populate_board_info() {
-            Ok(_) => {}
-            Err(_) => temp_board.populate_board_info()?,
-        }
+        temp_board.populate_board_info()?;
         temp_board.sampling_interval(std::time::Duration::from_millis(100))?;
         let board_name = temp_board.firmware_name();
         if board_name == identifier {
