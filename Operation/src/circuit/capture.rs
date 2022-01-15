@@ -163,9 +163,4 @@ impl Capture {
             }
         }
     }
-
-    fn process_error(&mut self, error: Error) {
-        error!("Error occured in capture: {}", error);
-        self.state = CircuitState::Stopped;
-    }
 }
