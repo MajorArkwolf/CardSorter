@@ -6,9 +6,7 @@ use circuit::{Circuit, CircuitState};
 use color_eyre::eyre::{eyre, Result};
 use sensor::motor_controller::{Motor, MotorControllerMessage, Movement};
 use sensor::{motor_controller::MotorControllerPublisher, photo_resistor::PhotoResistorSubscriber};
-use tracing::debug;
-use tracing::info;
-use tracing::{event, instrument, Level};
+use tracing::{info, instrument};
 
 #[derive(Clone, Debug)]
 pub struct Feeder {
@@ -96,20 +94,21 @@ impl Feeder {
             Ok(v) => v,
             Err(_) => return,
         };
-        if value < self.trigger {
-            info!(
-                "trigger `{}` value `{}` hit, moving to waiting",
-                self.trigger, value
-            );
-            let result = self
-                .motor_cont
-                .set(MotorControllerMessage::create(Motor::A, Movement::Stop))
-                .await;
+        if value >= self.trigger {
+            return;
+        }
+        info!(
+            "trigger `{}` value `{}` hit, moving to waiting",
+            self.trigger, value
+        );
+        let result = self
+            .motor_cont
+            .set(MotorControllerMessage::create(Motor::A, Movement::Stop))
+            .await;
 
-            match result {
-                Ok(_) => self.state = CircuitState::Waiting,
-                Err(_) => self.state = CircuitState::Stopped,
-            }
+        match result {
+            Ok(_) => self.state = CircuitState::Waiting,
+            Err(_) => self.state = CircuitState::Stopped,
         }
     }
 

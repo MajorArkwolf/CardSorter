@@ -6,7 +6,7 @@ use firmata::Firmata;
 use std::sync::Arc;
 use std::thread;
 use tokio::sync::Mutex;
-use tokio_serial::{ClearBuffer, DataBits, Parity, SerialPort, SerialPortInfo, StopBits};
+use tokio_serial::{ClearBuffer, SerialPort, SerialPortInfo};
 use tracing::{error, warn};
 
 pub fn generate(port: Box<dyn SerialPort>) -> ArduinoBoard<Box<dyn SerialPort>> {
@@ -61,7 +61,6 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
         };
         tried += 1;
         comm.set_timeout(std::time::Duration::from_secs(5))?;
-        comm.flush()?;
         comm.clear(ClearBuffer::All)?;
         let mut temp_board = firmata::Board::new(comm);
         thread::sleep(std::time::Duration::from_secs(1));
