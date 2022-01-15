@@ -61,8 +61,11 @@ pub fn generate_serial_board(template: SerialTemplate, identifier: String) -> Re
         tried += 1;
         comm.set_timeout(std::time::Duration::from_secs(1))?;
         let mut temp_board = firmata::Board::new(comm);
-        temp_board.populate_board_info()?;
-        temp_board.sampling_inerval(std::time::Duration::from_millis(100))?;
+        match temp_board.populate_board_info() {
+            Ok(_) => {}
+            Err(_) => temp_board.populate_board_info()?,
+        }
+        temp_board.sampling_interval(std::time::Duration::from_millis(100))?;
         let board_name = temp_board.firmware_name();
         if board_name == identifier {
             let board = ArduinoBoard::new(Arc::new(Mutex::new(temp_board)));
