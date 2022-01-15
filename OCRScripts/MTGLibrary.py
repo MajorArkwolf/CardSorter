@@ -1,10 +1,13 @@
 import json
 from MTGCard import *
+import logging
 
 class MTGLibrary:
     def __init__(self, data_file):
+        logging.info(f"Loading file: {data_file}")
         with open(data_file, "r", encoding='utf8') as read_file:
             self.data = json.load(read_file)
+            logging.info(f"Loading file complete, generating name lookup table")
             self.Generate_Lookup_Table()
 
     def Generate_Lookup_Table(self):
