@@ -21,9 +21,9 @@ class Camera:
 
     def capture_opencv(self):
         if camera_lib_loaded == True:
-            image = np.empty((self.resolution.y * self.resolution.x * 3), dtype=np.uint8)
+            image = np.empty((self.camera.resolution.y * self.camera.resolution.x * 3), dtype=np.uint8)
             self.camera.capture(image, 'bgr')
-            image = image.reshape((self.resolution.y, self.resolution.x, 3))
+            image = image.reshape((self.camera.resolution.y, self.camera.resolution.x, 3))
             return image
         else:
             return None
