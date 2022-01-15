@@ -10,9 +10,9 @@ import asyncio
 
 logging.basicConfig(filename='logging.log', filemode='a',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 logging.info('Began running MTG sorting listening server...')
-
+logging.info('Loading .env file values')
 config = dotenv_values("OCRScripts/.env")
-
+logging.info('Loading card data into memory')
 library = MTGLibrary(config["CARDDATA"])
 
 def is_socket_closed(sock: socket.socket):
@@ -90,8 +90,10 @@ async def run_server_listening():
         logging.exception('')
 
 async def main():
-    loop = asyncio.get_event_loop()
+    logging.info('main called, beginning setup')
+    #loop = asyncio.get_event_loop()
     server = await asyncio.start_server(handle_client, 'localhost', 10000)
+    logging.info('server started, beginning listener')
     while True:
         await server.start_serving()
     
