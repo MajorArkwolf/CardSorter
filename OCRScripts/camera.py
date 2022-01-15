@@ -19,12 +19,11 @@ class Camera:
             self.camera.rotation = 180
         self.loaded = camera_lib_loaded
 
-    def __del__(self):
-        if camera_lib_loaded == True:
-            self.camera.close()
-
     def capture_opencv(self):
-        image = np.empty((self.resolution.y * self.resolution.x * 3,), dtype=np.uint8)
-        self.camera.capture(image, 'bgr')
-        image = image.reshape((self.resolution.y, self.resolution.x, 3))
-        return image
+        if camera_lib_loaded == True:
+            image = np.empty((self.resolution.y * self.resolution.x * 3), dtype=np.uint8)
+            self.camera.capture(image, 'bgr')
+            image = image.reshape((self.resolution.y, self.resolution.x, 3))
+            return image
+        else:
+            return None
