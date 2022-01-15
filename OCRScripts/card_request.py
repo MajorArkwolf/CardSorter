@@ -29,5 +29,8 @@ async def card_request(library, request):
         return Response(-2, 0)
 
     card = Generate_Magic_Card(image)
-    card_search = library.Look_Up_Card(card)
-    return Response(0, 1)
+    if card != None:
+        card_search = library.Look_Up_Card(card)
+        return Response(0, 1)
+    else:
+        return Response(0, 0)

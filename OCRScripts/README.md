@@ -4,7 +4,7 @@ These scripts are heavily setup to work the current MTG Card Sorter in developme
 
 ## Dependencies
 ### Linux
-```sudo apt install python-pip python3-opencv```
+```sudo apt install python-pip python3-opencv tesseract-ocr libtesseract-dev```
 ### Python
 ```pip install opencv-python opencv-python-headless numpy pytesseract picamera python-dotenv```
 
