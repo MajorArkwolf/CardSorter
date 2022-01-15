@@ -10,6 +10,7 @@ use board::BoardContainer;
 use circuit::{capture::Capture, feeder::Feeder};
 use color_eyre::eyre::eyre;
 use color_eyre::eyre::Result;
+use firmata::Firmata;
 use tokio::sync::Mutex;
 
 struct CalibrationResult {
@@ -21,18 +22,39 @@ fn calibrate_photo_resistor(
     boards: &mut BoardContainer,
     sensor_id: u32,
 ) -> Result<CalibrationResult> {
-    let photo = boards
+    let photo_pin = boards
         .get_sensor(sensor_id)?
         .as_photo_resistor_mut()
-        .unwrap();
+        .unwrap()
+        .get_pin_id();
+
+    let mut unwrapped_board = {
+        let board = boards.get_board_from_sensor_id(sensor_id)?;
+
+        match board.get_board() {
+            board::BoardTypes::SerialBoard(v) => v.board.blocking_lock(),
+        }
+    };
 
     //turn light off
+
     let mut off_average = 0;
-    for _i in 1..20 {}
+    unwrapped_board.poll(5)?;
+    for _i in 1..20 {
+        unwrapped_board.poll(5)?;
+        let pin = unwrapped_board.get_physical_pin(photo_pin)?;
+        off_average += pin.value;
+    }
     off_average /= 20;
+
     //turn light on
+    unwrapped_board.poll(5)?;
     let mut on_average = 0;
-    for _i in 1..20 {}
+    for _i in 1..20 {
+        unwrapped_board.poll(5)?;
+        let pin = unwrapped_board.get_physical_pin(photo_pin)?;
+        off_average += pin.value;
+    }
     on_average /= 20;
 
     if off_average > on_average {
