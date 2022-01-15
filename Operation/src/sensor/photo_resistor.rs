@@ -31,6 +31,10 @@ impl PhotoResistor {
         }
     }
 
+    pub fn get_pin_id(&self) -> firmata::PinId {
+        self.pin
+    }
+
     pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
         let new_value = self.get(board).await?;
         if new_value != self.value {
