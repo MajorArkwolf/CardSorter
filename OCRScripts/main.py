@@ -1,4 +1,5 @@
 import display_picture
+from dotenv import dotenv_values
 from MTGLibrary import *
 from pytesseract import Output
 from Network import *
@@ -10,7 +11,9 @@ import asyncio
 logging.basicConfig(filename='logging.log', filemode='a',format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.DEBUG)
 logging.info('Began running MTG sorting listening server...')
 
-library = MTGLibrary("A:\\Coding\\MTGSorter\\Data\\default-cards.json")
+config = dotenv_values("OCRScripts/.env")
+
+library = MTGLibrary(config["CARDDATA"])
 
 def is_socket_closed(sock: socket.socket):
     try:
