@@ -17,7 +17,7 @@ pub enum BoardTypes {
 impl core::fmt::Debug for BoardTypes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::SerialBoard(arg0) => f.debug_tuple("SerialBoard").finish(),
+            Self::SerialBoard(_arg0) => f.debug_tuple("SerialBoard").finish(),
         }
     }
 }
@@ -37,6 +37,10 @@ impl BoardWrapper {
             board,
             sensors: vec![],
         }
+    }
+
+    pub fn get_board(&mut self) -> &mut BoardTypes {
+        &mut self.board
     }
 
     pub fn add_sensor(&mut self, sensor: Sensor) {
@@ -63,7 +67,7 @@ impl BoardWrapper {
             match sensor {
                 Sensor::Servo(v) => v.update(&mut *temp_board).await?,
                 Sensor::MotorController(v) => v.update(&mut *temp_board).await?,
-                Sensor::Motor(_) => continue,
+                Sensor::LedStrip(v) => v.update(&mut *temp_board).await?,
                 Sensor::PhotoResistor(v) => v.update(&mut *temp_board).await?,
             }
         }
@@ -114,6 +118,18 @@ impl BoardContainer {
             .find(|x| x.id == board_id)
             .ok_or_else(|| eyre!("failed to find"))?
             .get_sensor(id)
+    }
+
+    pub fn get_board_from_sensor_id(&mut self, id: u32) -> Result<&mut BoardWrapper> {
+        let board_id = match self.id_map.get(&id) {
+            Some(v) => *v,
+            None => return Err(eyre!("sensor id `{}` was not found in the system", id)),
+        };
+
+        self.boards
+            .iter_mut()
+            .find(|x| x.id == board_id)
+            .ok_or_else(|| eyre!("failed to find"))
     }
 
     pub async fn connect_sensors(&mut self) -> Result<()> {
