@@ -55,6 +55,7 @@ async fn calibrate_photo_resistor(
     let off = PixelColor::new(-1, 0, 0, 0);
     //turn light off
     board2.string_write(&off.to_string())?;
+    debug!("Off msg: {}", off.to_string());
 
     let mut off_average = 0;
     board1.poll(5)?;
