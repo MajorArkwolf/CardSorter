@@ -1,7 +1,7 @@
 #include "NeoPixelPlugin.h"
 
 template<class T>
-const T& clamp(const T& x, const T& upper, const T& lower) {
+const T& clamp(const T& x, const T& lower, const T& upper) {
     return min(upper, max(x, lower));
 }
 
@@ -28,8 +28,9 @@ void NeoPixelPlugin::ParseMessage(const String& message) {
     int start_value = 0;
     int end_value = 0;
 
-    while (true) {
-        end_value = message.indexOf(' ', start_value);
+    // Stop when we have populated the max array values
+    while (index < 4) {
+        end_value = message.indexOf(',', start_value);
         // If the next value is not found we break
         if (end_value < 0) {
           break;
@@ -39,18 +40,8 @@ void NeoPixelPlugin::ParseMessage(const String& message) {
         rbgp[index] = message.substring(start_value, end_value).toInt();
         ++index;
 
-        // Stop when we have populated the max array values
-        if (index >= 4) {
-          break;
-        }
-
         // Since the current end value is a whitespace we skip 1 ahead of it
         start_value = end_value + 1;
-
-        // Check to ensure that we dont overshoot the length
-        if (start_value >= message.length()) {
-          break;
-        }
     }
 
     // We can have an RGB or RGBP but nothing less, so dont set anything
@@ -58,8 +49,10 @@ void NeoPixelPlugin::ParseMessage(const String& message) {
     if (index < 3) {
       return;
     }
-
-    uint32_t color = m_strip.Color((uint8_t)clamp(rbgp[0], 0, 255), (uint8_t)clamp(rbgp[1], 0, 255), (uint8_t)clamp(rbgp[2], 0, 255));
+    uint8_t red = clamp(rbgp[0], 0, 255);
+    uint8_t green = clamp(rbgp[1], 0, 255);
+    uint8_t blue = clamp(rbgp[2], 0, 255);
+    uint32_t color = m_strip.Color(red, green, blue);
 
     // A position of -1 translates to a fill, so we set all pixels to this color, else we set the individual color.
     if (rbgp[3] == -1) {
