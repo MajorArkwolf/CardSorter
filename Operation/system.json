@@ -63,6 +63,17 @@
                 }
             },
             "board_id": 2
+        },
+        {
+            "sensor": {
+                "PhotoResistor": {
+                    "id": 2,
+                    "pin": {
+                        "Analog": 0
+                    }
+                }
+            },
+            "board_id": 2
         }
     ]
 }
