@@ -8,6 +8,15 @@
                     "baud_rate": 57600
                 }
             }
+        },
+        {
+            "id": 2,
+            "identifier": "NeoPixel.ino",
+            "comm_type": {
+                "Serial": {
+                    "baud_rate": 57600
+                }
+            }
         }
     ],
     "sensors": [
@@ -46,6 +55,14 @@
                 }
             },
             "board_id": 1
+        },
+        {
+            "sensor": {
+                "LedStrip": {
+                    "id": 4
+                }
+            },
+            "board_id": 2
         }
     ]
 }
