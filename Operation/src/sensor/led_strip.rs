@@ -1,15 +1,15 @@
 use super::IOSensor;
 use crate::subscriber;
-use async_channel::{Receiver, Sender};
+use async_channel::Receiver;
 use color_eyre::eyre::{Result, WrapErr};
 use firmata::Firmata;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::format;
 use std::io::{Read, Write};
-use subscriber::{Publisher, Subscriber};
-use tracing::{debug, error};
-use tracing::{event, instrument, Level};
+use subscriber::Publisher;
+use tracing::error;
+use tracing::instrument;
 
 #[derive(Copy, Clone, Debug)]
 pub struct PixelColor {
@@ -17,6 +17,17 @@ pub struct PixelColor {
     red: u8,
     green: u8,
     blue: u8,
+}
+
+impl PixelColor {
+    pub fn new(pixel_positon: i32, red: u8, green: u8, blue: u8) -> PixelColor {
+        Self {
+            pixel_positon,
+            red,
+            green,
+            blue,
+        }
+    }
 }
 
 impl fmt::Display for PixelColor {
