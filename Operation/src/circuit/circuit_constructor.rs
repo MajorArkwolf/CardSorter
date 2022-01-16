@@ -14,12 +14,12 @@ use color_eyre::eyre::Result;
 use firmata::Firmata;
 use tokio::sync::Mutex;
 
-struct CalibrationResult {
+pub struct CalibrationResult {
     sensor_id: u32,
     sensor_calibration_value: i32,
 }
 
-fn calibrate_photo_resistor(
+async fn calibrate_photo_resistor(
     boards: &mut BoardContainer,
     sensor_id: u32,
     light_sensor_id: u32,
@@ -46,8 +46,8 @@ fn calibrate_photo_resistor(
         }
     };
 
-    let mut board1 = board1.blocking_lock();
-    let mut board2 = board2.blocking_lock();
+    let mut board1 = board1.lock().await;
+    let mut board2 = board2.lock().await;
 
     let off = PixelColor::new(-1, 0, 0, 0);
     //turn light off
@@ -99,8 +99,9 @@ fn calibrate_photo_resistor(
     })
 }
 
-fn calibrate_sensors(boards: &mut BoardContainer) -> Result<Vec<CalibrationResult>> {
-    let calibration_results: Vec<CalibrationResult> = vec![calibrate_photo_resistor(boards, 2, 4)?];
+pub async fn calibrate_sensors(boards: &mut BoardContainer) -> Result<Vec<CalibrationResult>> {
+    let calibration_results: Vec<CalibrationResult> =
+        vec![calibrate_photo_resistor(boards, 2, 4).await?];
     Ok(calibration_results)
 }
 
@@ -162,8 +163,10 @@ fn construct_capture(
     ))
 }
 
-pub fn construct_circuit(boards: &mut BoardContainer) -> Result<CircuitController> {
-    let calibration_results = calibrate_sensors(boards)?;
+pub fn construct_circuit(
+    boards: &mut BoardContainer,
+    calibration_results: &[CalibrationResult],
+) -> Result<CircuitController> {
     let circuits: Vec<Arc<Mutex<Box<dyn Circuit + Send>>>> = vec![
         Arc::new(Mutex::new(Box::new(construct_feeder(
             boards,

@@ -29,7 +29,8 @@ async fn main() -> Result<()> {
 
     let mut circuit_controller: CircuitController = {
         let mut mutex = board_array.lock().await;
-        circuit_constructor::construct_circuit(&mut mutex)?
+        let calibration_results = circuit_constructor::calibrate_sensors(&mut mutex).await?;
+        circuit_constructor::construct_circuit(&mut mutex, &calibration_results)?
     };
 
     info!("System startup complete, beginning run process");
