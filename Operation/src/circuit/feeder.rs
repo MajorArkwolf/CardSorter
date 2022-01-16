@@ -6,6 +6,7 @@ use circuit::{Circuit, CircuitState};
 use color_eyre::eyre::{eyre, Result};
 use sensor::motor_controller::{Motor, MotorControllerMessage, Movement};
 use sensor::{motor_controller::MotorControllerPublisher, photo_resistor::PhotoResistorSubscriber};
+use tracing::debug;
 use tracing::{info, instrument};
 
 #[derive(Clone, Debug)]
@@ -94,6 +95,7 @@ impl Feeder {
             Ok(v) => v,
             Err(_) => return,
         };
+        debug!("Feeder running Value: {}, Trigger: {}", value, self.trigger);
         if value >= self.trigger {
             return;
         }
