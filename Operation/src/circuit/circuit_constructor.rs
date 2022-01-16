@@ -6,6 +6,7 @@ use super::Circuit;
 use super::CircuitState;
 use crate::board;
 use crate::circuit;
+use crate::sensor::led_strip::PixelColor;
 use board::BoardContainer;
 use circuit::{capture::Capture, feeder::Feeder};
 use color_eyre::eyre::eyre;
@@ -21,6 +22,7 @@ struct CalibrationResult {
 fn calibrate_photo_resistor(
     boards: &mut BoardContainer,
     sensor_id: u32,
+    light_sensor_id: u32,
 ) -> Result<CalibrationResult> {
     let photo_pin = boards
         .get_sensor(sensor_id)?
@@ -28,31 +30,47 @@ fn calibrate_photo_resistor(
         .unwrap()
         .get_pin_id();
 
-    let mut unwrapped_board = {
+    let board1 = {
         let board = boards.get_board_from_sensor_id(sensor_id)?;
 
         match board.get_board() {
-            board::BoardTypes::SerialBoard(v) => v.board.blocking_lock(),
+            board::BoardTypes::SerialBoard(v) => v.board.clone(),
         }
     };
 
+    let board2 = {
+        let board = boards.get_board_from_sensor_id(light_sensor_id)?;
+
+        match board.get_board() {
+            board::BoardTypes::SerialBoard(v) => v.board.clone(),
+        }
+    };
+
+    let mut board1 = board1.blocking_lock();
+    let mut board2 = board2.blocking_lock();
+
+    let off = PixelColor::new(-1, 0, 0, 0);
     //turn light off
+    board2.string_write(&off.to_string())?;
 
     let mut off_average = 0;
-    unwrapped_board.poll(5)?;
+    board1.poll(5)?;
     for _i in 1..20 {
-        unwrapped_board.poll(5)?;
-        let pin = unwrapped_board.get_physical_pin(photo_pin)?;
+        board1.poll(5)?;
+        let pin = board1.get_physical_pin(photo_pin)?;
         off_average += pin.value;
     }
     off_average /= 20;
 
-    //turn light on
-    unwrapped_board.poll(5)?;
+    let on = PixelColor::new(-1, 255, 255, 255);
+    //turn light off
+    board2.string_write(&on.to_string())?;
+
+    board1.poll(5)?;
     let mut on_average = 0;
     for _i in 1..20 {
-        unwrapped_board.poll(5)?;
-        let pin = unwrapped_board.get_physical_pin(photo_pin)?;
+        board1.poll(5)?;
+        let pin = board1.get_physical_pin(photo_pin)?;
         off_average += pin.value;
     }
     on_average /= 20;
@@ -82,7 +100,7 @@ fn calibrate_photo_resistor(
 }
 
 fn calibrate_sensors(boards: &mut BoardContainer) -> Result<Vec<CalibrationResult>> {
-    let calibration_results: Vec<CalibrationResult> = vec![calibrate_photo_resistor(boards, 2)?];
+    let calibration_results: Vec<CalibrationResult> = vec![calibrate_photo_resistor(boards, 2, 4)?];
     Ok(calibration_results)
 }
 
