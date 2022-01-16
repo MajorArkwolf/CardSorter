@@ -75,8 +75,11 @@ impl Feeder {
     async fn process_ready(&mut self) {
         let result = self.servo.set(0).await;
         match result {
-            Ok(_) => self.state = CircuitState::Running,
-            Err(_) => self.state = CircuitState::Stopped,
+            Ok(_) => {}
+            Err(_) => {
+                self.state = CircuitState::Stopped;
+                return;
+            }
         }
         let result = self
             .motor_cont
