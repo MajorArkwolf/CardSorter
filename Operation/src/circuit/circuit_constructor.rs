@@ -13,6 +13,7 @@ use color_eyre::eyre::eyre;
 use color_eyre::eyre::Result;
 use firmata::Firmata;
 use tokio::sync::Mutex;
+use tracing::debug;
 
 pub struct CalibrationResult {
     sensor_id: u32,
@@ -24,6 +25,7 @@ async fn calibrate_photo_resistor(
     sensor_id: u32,
     light_sensor_id: u32,
 ) -> Result<CalibrationResult> {
+    debug!("Beginning calibration of photo resistor");
     let photo_pin = boards
         .get_sensor(sensor_id)?
         .as_photo_resistor_mut()
@@ -49,6 +51,7 @@ async fn calibrate_photo_resistor(
     let mut board1 = board1.lock().await;
     let mut board2 = board2.lock().await;
 
+    debug!("Turning light off");
     let off = PixelColor::new(-1, 0, 0, 0);
     //turn light off
     board2.string_write(&off.to_string())?;
@@ -63,7 +66,8 @@ async fn calibrate_photo_resistor(
     off_average /= 20;
 
     let on = PixelColor::new(-1, 255, 255, 255);
-    //turn light off
+    debug!("Turning light on");
+    //turn light on
     board2.string_write(&on.to_string())?;
 
     board1.poll(5)?;
@@ -71,9 +75,11 @@ async fn calibrate_photo_resistor(
     for _i in 1..20 {
         board1.poll(5)?;
         let pin = board1.get_physical_pin(photo_pin)?;
-        off_average += pin.value;
+        on_average += pin.value;
     }
     on_average /= 20;
+
+    debug!("Off average {}, On average {}", off_average, on_average);
 
     if off_average > on_average {
         return Err(eyre!(
@@ -100,6 +106,7 @@ async fn calibrate_photo_resistor(
 }
 
 pub async fn calibrate_sensors(boards: &mut BoardContainer) -> Result<Vec<CalibrationResult>> {
+    debug!("Beginning sensor calibration");
     let calibration_results: Vec<CalibrationResult> =
         vec![calibrate_photo_resistor(boards, 2, 4).await?];
     Ok(calibration_results)
@@ -170,11 +177,11 @@ pub fn construct_circuit(
     let circuits: Vec<Arc<Mutex<Box<dyn Circuit + Send>>>> = vec![
         Arc::new(Mutex::new(Box::new(construct_feeder(
             boards,
-            &calibration_results,
+            calibration_results,
         )?))),
         Arc::new(Mutex::new(Box::new(construct_capture(
             boards,
-            &calibration_results,
+            calibration_results,
         )?))),
     ];
     Ok(CircuitController::create(circuits))
