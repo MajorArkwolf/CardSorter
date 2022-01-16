@@ -36,8 +36,8 @@ impl fmt::Display for PixelColor {
             f,
             "{}",
             format!(
-                "{}{} {} {} {} {}",
-                '{', self.red, self.green, self.blue, self.pixel_positon, '}'
+                "{},{},{},{},",
+                self.red, self.green, self.blue, self.pixel_positon
             )
         )
     }
