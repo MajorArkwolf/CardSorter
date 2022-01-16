@@ -91,6 +91,7 @@ async fn calibrate_photo_resistor(
     }
 
     let half_way_point: i32 = ((on_average - off_average) / 2) + off_average;
+    debug!("Half way point decided at: {}", half_way_point);
 
     if half_way_point > on_average {
         return Err(eyre!(
@@ -134,6 +135,8 @@ fn construct_feeder(
         .find(|x| x.sensor_id == 2)
         .ok_or_else(|| eyre!("failed to find a calibration result that matches the id"))?
         .sensor_calibration_value;
+
+    debug!("Calibration value used for feeder: {}", value);
 
     Ok(Feeder::create(
         0,
