@@ -3,9 +3,8 @@ use color_eyre::Result;
 use futures::sink::SinkExt;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tokio::io::AsyncWriteExt;
 use tokio::net::{TcpStream, ToSocketAddrs};
-use tokio_util::codec::{BytesCodec, Framed, LengthDelimitedCodec};
+use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "type")]

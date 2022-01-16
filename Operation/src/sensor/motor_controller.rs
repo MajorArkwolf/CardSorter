@@ -5,8 +5,7 @@ use firmata::Firmata;
 use serde::{Deserialize, Serialize};
 use std::io::{Read, Write};
 use subscriber::Publisher;
-use tracing::debug;
-use tracing::{event, instrument, Level};
+use tracing::instrument;
 
 use super::IOSensor;
 
