@@ -67,7 +67,7 @@
         {
             "sensor": {
                 "PhotoResistor": {
-                    "id": 2,
+                    "id": 5,
                     "pin": {
                         "Analog": 0
                     }
