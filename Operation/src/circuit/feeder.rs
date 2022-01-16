@@ -93,7 +93,6 @@ impl Feeder {
 
     #[instrument(skip_all)]
     async fn process_running(&mut self) {
-        debug!("Feeder running");
         let value = self.photo_resistor.get().await;
         let value = match value {
             Ok(v) => v,
