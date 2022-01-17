@@ -8,6 +8,7 @@ pub mod subscriber;
 use circuit::circuit_controller::CircuitController;
 use color_eyre::eyre::{Error, Result};
 use std::sync::Arc;
+use tokio::sync::watch;
 use tokio::sync::Mutex;
 use tracing::{debug, info};
 
@@ -33,12 +34,19 @@ async fn main() -> Result<()> {
         circuit_constructor::construct_circuit(&mut mutex, &calibration_results)?
     };
 
+    let (tx, mut rx) = watch::channel(true);
+
     info!("System startup complete, beginning run process");
-    let _join = tokio::task::spawn(async move {
+    let join = tokio::task::spawn(async move {
         loop {
             let mut data = board_array.lock().await;
-            data.update().await?;
-            debug!("cycle complete");
+            match data.update().await {
+                Ok(_) => tx.send(true)?,
+                Err(e) => {
+                    tx.send(false)?;
+                    return Err(e);
+                }
+            }
         }
         Ok::<(), Error>(())
     });
@@ -47,6 +55,11 @@ async fn main() -> Result<()> {
     debug!("Beginning circuit controller update cycle");
     loop {
         circuit_controller.update().await?;
+        rx.changed().await?;
+        if !*rx.borrow() {
+            break;
+        }
     }
+    join.await??;
     Ok(())
 }
