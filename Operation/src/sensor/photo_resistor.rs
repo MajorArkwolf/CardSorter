@@ -37,7 +37,6 @@ impl PhotoResistor {
 
     pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
         let new_value = self.get(board).await?;
-        debug!("new value: {}", new_value);
         if new_value != self.value {
             self.broadcast_to_subscribers(new_value).await?;
         }
