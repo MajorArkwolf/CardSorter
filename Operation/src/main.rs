@@ -38,6 +38,7 @@ async fn main() -> Result<()> {
         loop {
             let mut data = board_array.lock().await;
             data.update().await?;
+            debug!("cycle complete");
         }
         Ok::<(), Error>(())
     });
