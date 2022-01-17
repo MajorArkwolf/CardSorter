@@ -67,6 +67,7 @@ impl BoardWrapper {
             Err(e) => match e {
                 firmata::FirmataError::Timeout(_) => {}
                 firmata::FirmataError::ParseError(_, _) => {}
+                firmata::FirmataError::IoError(_) => {}
                 err => return Err(eyre!("firmata board errer: {:?}", err)),
             },
         };
