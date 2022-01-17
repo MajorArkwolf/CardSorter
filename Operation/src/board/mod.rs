@@ -62,7 +62,14 @@ impl BoardWrapper {
         let mut temp_board = match &self.board {
             BoardTypes::SerialBoard(v) => v.board.lock().await,
         };
-        temp_board.poll(2)?;
+        match temp_board.poll(2) {
+            Ok(_) => {}
+            Err(e) => match e {
+                firmata::FirmataError::Timeout(_) => {}
+                firmata::FirmataError::ParseError(_, _) => {}
+                err => return Err(eyre!("firmata board errer: {:?}", err)),
+            },
+        };
         for sensor in self.sensors.iter_mut() {
             match sensor {
                 Sensor::Servo(v) => v.update(&mut *temp_board).await?,
