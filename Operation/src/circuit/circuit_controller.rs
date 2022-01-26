@@ -1,5 +1,5 @@
 use super::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Result};
+use color_eyre::eyre::{eyre, Error, Result};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::error;
@@ -7,7 +7,7 @@ use tracing::error;
 pub struct CircuitController {
     circuit: Vec<Arc<Mutex<Box<dyn Circuit + Send>>>>,
     active: usize,
-    jobs: Vec<tokio::task::JoinHandle<()>>,
+    jobs: Vec<tokio::task::JoinHandle<std::result::Result<(), color_eyre::Report>>>,
 }
 
 impl CircuitController {
@@ -29,8 +29,9 @@ impl CircuitController {
             let job = tokio::task::spawn(async move {
                 loop {
                     let mut cir = d.lock().await;
-                    cir.update().await;
+                    cir.update().await?;
                 }
+                Ok::<(), Error>(())
             });
             self.jobs.push(job);
         }
