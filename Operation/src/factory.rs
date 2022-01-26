@@ -80,11 +80,10 @@ pub async fn generate_system() -> Result<System> {
                     .motor_controllers
                     .push(MotorController::create(sensor.id, pins, board))
             }
-            Type::PhotoResistor => system.sensors.photo_resistor.push(PhotoResistor::create(
-                sensor.id,
-                sensor.pins[0],
-                board,
-            )),
+            Type::PhotoResistor => system
+                .sensors
+                .photo_resistor
+                .push(PhotoResistor::create(sensor.id, sensor.pins[0], board).await?),
             Type::Servo => {
                 system
                     .sensors

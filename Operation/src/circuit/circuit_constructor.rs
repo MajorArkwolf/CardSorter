@@ -14,8 +14,8 @@ use tokio::sync::Mutex;
 use tracing::debug;
 
 pub struct CalibrationResult {
-    sensor_id: u32,
-    sensor_calibration_value: u16,
+    pub sensor_id: u32,
+    pub sensor_calibration_value: u16,
 }
 
 async fn calibrate_photo_resistor(
