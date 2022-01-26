@@ -1,8 +1,8 @@
 use color_eyre::eyre::{Result, WrapErr};
 use firmata::asynchronous::board::Board;
+use getset::Getters;
 use std::fmt;
 use std::format;
-use std::io::{Read, Write};
 
 #[derive(Clone, Debug, Copy)]
 pub struct PixelColor {
@@ -36,8 +36,9 @@ impl fmt::Display for PixelColor {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Getters)]
 pub struct LedStrip {
+    #[get = "pub"]
     id: u32,
     board: Board,
 }
@@ -47,7 +48,7 @@ impl LedStrip {
         Self { id, board }
     }
 
-    pub async fn set<T: Read + Write>(&mut self, value: PixelColor) -> Result<()> {
+    pub async fn set(&mut self, value: PixelColor) -> Result<()> {
         self.board
             .string_write(&value.to_string())
             .await

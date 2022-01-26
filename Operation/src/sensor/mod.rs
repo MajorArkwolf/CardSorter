@@ -1,4 +1,7 @@
-use self::{motor_controller::MotorController, photo_resistor::PhotoResistor, servo::Servo};
+use self::{
+    led_strip::LedStrip, motor_controller::MotorController, photo_resistor::PhotoResistor,
+    servo::Servo,
+};
 use getset::{Getters, MutGetters, Setters};
 use serde::{Deserialize, Serialize};
 pub mod led_strip;
@@ -12,6 +15,7 @@ pub enum Type {
     MotorController,
     PhotoResistor,
     Servo,
+    LedStrip,
     None,
 }
 
@@ -28,6 +32,7 @@ pub struct SensorContainer {
     pub motor_controllers: Vec<MotorController>,
     pub photo_resistor: Vec<PhotoResistor>,
     pub servos: Vec<Servo>,
+    pub led_strips: Vec<LedStrip>,
 }
 
 impl SensorContainer {
@@ -45,6 +50,11 @@ impl SensorContainer {
         let found = self.servos.iter().any(|y| *y.id() == id);
         if found {
             return Type::Servo;
+        }
+
+        let found = self.led_strips.iter().any(|y| *y.id() == id);
+        if found {
+            return Type::LedStrip;
         }
 
         return Type::None;
