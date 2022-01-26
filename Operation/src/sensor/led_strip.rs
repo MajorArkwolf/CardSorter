@@ -1,17 +1,10 @@
-use super::IOSensor;
-use crate::subscriber;
-use async_channel::Receiver;
 use color_eyre::eyre::{Result, WrapErr};
-use firmata::Firmata;
-use serde::{Deserialize, Serialize};
+use firmata::asynchronous::board::Board;
 use std::fmt;
 use std::format;
 use std::io::{Read, Write};
-use subscriber::Publisher;
-use tracing::error;
-use tracing::instrument;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug, Copy)]
 pub struct PixelColor {
     pixel_positon: i32,
     red: u8,
@@ -43,78 +36,21 @@ impl fmt::Display for PixelColor {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct LedStrip {
     id: u32,
-    #[serde(skip)]
-    rx_array: Vec<Receiver<PixelColor>>,
+    board: Board,
 }
 
 impl LedStrip {
-    pub fn create(id: u32) -> Self {
-        Self {
-            id,
-            rx_array: vec![],
-        }
+    pub fn create(id: u32, board: Board) -> Self {
+        Self { id, board }
     }
 
-    pub fn publisher(&mut self) -> LedPublisher {
-        let (tx, rx) = async_channel::bounded::<PixelColor>(20);
-        self.rx_array.push(rx);
-
-        LedPublisher {
-            publisher: Publisher::create(tx),
-        }
-    }
-
-    pub fn set<T: Read + Write>(
-        &mut self,
-        board: &mut firmata::Board<T>,
-        value: PixelColor,
-    ) -> Result<()> {
-        board
+    pub async fn set<T: Read + Write>(&mut self, value: PixelColor) -> Result<()> {
+        self.board
             .string_write(&value.to_string())
+            .await
             .wrap_err_with(|| "failed to write led string to firmata board")
-    }
-
-    pub async fn update<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
-        for channel in self.rx_array.iter() {
-            if !channel.is_empty() && !channel.is_closed() {
-                let value = match channel.recv().await {
-                    Ok(v) => v,
-                    Err(_) => {
-                        error!("recv error when listening to publishers");
-                        continue;
-                    }
-                };
-                board
-                    .string_write(&value.to_string())
-                    .wrap_err_with(|| "failed to write led string to firmata board")?;
-            }
-        }
-        Ok(())
-    }
-}
-
-impl IOSensor for LedStrip {
-    fn get_id(&self) -> u32 {
-        self.id
-    }
-
-    fn register<T: Read + Write>(&mut self, _board: &mut firmata::Board<T>) -> Result<()> {
-        // This is set on the board as its a non standard setup
-        Ok(())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct LedPublisher {
-    publisher: Publisher<PixelColor>,
-}
-
-impl LedPublisher {
-    #[instrument]
-    pub async fn set(&mut self, value: PixelColor) -> Result<()> {
-        self.publisher.set(value).await
     }
 }
