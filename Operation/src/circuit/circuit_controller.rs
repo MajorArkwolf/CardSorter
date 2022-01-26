@@ -3,7 +3,6 @@ use color_eyre::eyre::{eyre, Result};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tracing::error;
-use tracing::{event, instrument, Level};
 
 pub struct CircuitController {
     circuit: Vec<Arc<Mutex<Box<dyn Circuit + Send>>>>,

@@ -1,15 +1,12 @@
-use std::io::Read;
-
 use crate::circuit;
 use crate::network::{CardData, Network, PictureFormat, Request};
 use crate::sensor;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Context, Error, Result, WrapErr};
-use color_eyre::Report;
+use color_eyre::eyre::{eyre, Result};
 use sensor::{photo_resistor::PhotoResistor, servo::Servo};
+use tracing::instrument;
 use tracing::{debug, error, info};
-use tracing::{event, instrument, Level};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum CaptureStates {
