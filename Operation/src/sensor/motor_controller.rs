@@ -1,7 +1,7 @@
 use color_eyre::eyre::{eyre, Result};
 use firmata::asynchronous::board::Board;
 use getset::Getters;
-use std::io::{Read, Write};
+
 const MOTOR_A_PINS_INDEX: [usize; 2] = [0, 1];
 const MOTOR_B_PINS_INDEX: [usize; 2] = [2, 3];
 const MOTOR_FORWARD: [bool; 2] = [true, false];

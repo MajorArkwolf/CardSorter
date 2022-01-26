@@ -1,4 +1,4 @@
-use crate::board::{generate_board_io, BoardTemplate, FirmataBoardIo, FirmataBoardTask};
+use crate::board::{generate_board_io, BoardTemplate, FirmataBoardTask};
 use crate::sensor::motor_controller::MotorController;
 use crate::sensor::photo_resistor::PhotoResistor;
 use crate::sensor::servo::Servo;
