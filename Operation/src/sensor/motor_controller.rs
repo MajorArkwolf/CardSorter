@@ -24,17 +24,6 @@ impl Default for Movement {
         Movement::Stop
     }
 }
-#[derive(Clone, Debug, Copy)]
-pub struct MotorControllerMessage {
-    motor: Motor,
-    movement: Movement,
-}
-
-impl MotorControllerMessage {
-    pub fn create(motor: Motor, movement: Movement) -> Self {
-        Self { motor, movement }
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct MotorController {
@@ -48,11 +37,7 @@ impl MotorController {
         Self { id, pins, board }
     }
 
-    pub async fn set_motor<T: Read + Write>(
-        &mut self,
-        motor: Motor,
-        movement: Movement,
-    ) -> Result<()> {
+    pub async fn set(&mut self, motor: Motor, movement: Movement) -> Result<()> {
         let pins = match motor {
             Motor::A => [
                 self.pins[MOTOR_A_PINS_INDEX[0]],
