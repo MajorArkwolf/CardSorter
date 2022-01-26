@@ -1,4 +1,5 @@
 use crate::board::{generate_board_io, BoardTemplate, FirmataBoardTask};
+use crate::sensor::led_strip::LedStrip;
 use crate::sensor::motor_controller::MotorController;
 use crate::sensor::photo_resistor::PhotoResistor;
 use crate::sensor::servo::Servo;
@@ -14,6 +15,12 @@ use tracing::info;
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Default, Debug)]
+pub struct System {
+    pub board_tasks: Vec<FirmataBoardTask>,
+    pub sensors: SensorContainer,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct SystemTemplate {
     boards: Vec<BoardTemplate>,
@@ -25,7 +32,7 @@ async fn generate_board(template: BoardTemplate) -> Result<FirmataBoardTask> {
     Ok(FirmataBoardTask::create(template.id, board))
 }
 
-pub async fn generate_system() -> Result<()> {
+pub async fn generate_system() -> Result<System> {
     info!("Beginning system generation...");
     // Load our structure in from json to begin construction
     let mut file = File::open("./system.json")
@@ -34,16 +41,15 @@ pub async fn generate_system() -> Result<()> {
     file.read_to_string(&mut contents)?;
     let template: SystemTemplate = serde_json::from_str(&contents)?;
 
-    let mut board_tasks: Vec<FirmataBoardTask> = vec![];
-    let mut sensors = SensorContainer::default();
+    let mut system = System::default();
 
     // Generate the boards we will be interfacing with
     info!("Generating boards...");
     for temp_board in template.boards {
-        if board_tasks.iter().any(|x| *x.id() == temp_board.id) {
+        if system.board_tasks.iter().any(|x| *x.id() == temp_board.id) {
             return Err(eyre!("board id already exists, {:?}", temp_board));
         }
-        board_tasks.push(generate_board(temp_board).await?);
+        system.board_tasks.push(generate_board(temp_board).await?);
     }
     info!("Generating boards complete.");
 
@@ -51,11 +57,15 @@ pub async fn generate_system() -> Result<()> {
     info!("Generating sensors.");
 
     for sensor in template.sensors {
-        if sensors.find_sensor_by_id(sensor.id) != Type::None {
+        if system.sensors.find_sensor_by_id(sensor.id) != Type::None {
             return Err(eyre!("sensor id already exists, {:?}", sensor));
         }
 
-        let board = match board_tasks.iter_mut().find(|x| *x.id() == sensor.board_id) {
+        let board = match system
+            .board_tasks
+            .iter_mut()
+            .find(|x| *x.id() == sensor.board_id)
+        {
             Some(v) => v.board().clone(),
             None => {
                 return Err(eyre!("fail to find a board with board id, {:?}", sensor,));
@@ -65,27 +75,35 @@ pub async fn generate_system() -> Result<()> {
             Type::MotorController => {
                 let mut pins: [u8; 4] = [0, 0, 0, 0];
                 pins.copy_from_slice(&sensor.pins[0..4]);
-                sensors
+                system
+                    .sensors
                     .motor_controllers
                     .push(MotorController::create(sensor.id, pins, board))
             }
-            Type::PhotoResistor => {
-                sensors
-                    .photo_resistor
-                    .push(PhotoResistor::create(sensor.id, sensor.pins[0], board))
+            Type::PhotoResistor => system.sensors.photo_resistor.push(PhotoResistor::create(
+                sensor.id,
+                sensor.pins[0],
+                board,
+            )),
+            Type::Servo => {
+                system
+                    .sensors
+                    .servos
+                    .push(Servo::create(sensor.id, sensor.pins[0], board))
             }
-            Type::Servo => sensors
-                .servos
-                .push(Servo::create(sensor.id, sensor.pins[0], board)),
+            Type::LedStrip => system
+                .sensors
+                .led_strips
+                .push(LedStrip::create(sensor.id, board)),
             Type::None => return Err(eyre!("None is not a valid sensor")),
         }
     }
     info!("Generating sensors complete.");
     info!(
         "Found {} boards that were setup succesfully.",
-        board_tasks.len()
+        system.board_tasks.len()
     );
-    Ok(())
+    Ok(system)
 }
 
 pub fn generate_mock_json() -> Result<()> {
@@ -100,7 +118,15 @@ pub fn generate_mock_json() -> Result<()> {
         identifier: "FirmataBoard.ino".to_string(),
         address: "192.168.128.10:3030".to_string(),
     };
+
+    let board_2 = BoardTemplate {
+        id: 1,
+        identifier: "FirmataBoard2.ino".to_string(),
+        address: "192.168.128.11:3030".to_string(),
+    };
+
     system.boards.push(board_1);
+    system.boards.push(board_2);
 
     let sensor_1 = SensorTemplate {
         id: 1,
@@ -122,9 +148,17 @@ pub fn generate_mock_json() -> Result<()> {
         sensor_type: Type::MotorController,
         pins: vec![4, 5, 0, 0],
     };
+
+    let sensor_4 = SensorTemplate {
+        id: 4,
+        board_id: 2,
+        sensor_type: Type::LedStrip,
+        pins: vec![],
+    };
     system.sensors.push(sensor_1);
     system.sensors.push(sensor_2);
     system.sensors.push(sensor_3);
+    system.sensors.push(sensor_4);
 
     let data = serde_json::to_string(&system).unwrap();
     fs::write("system.json", &data).wrap_err_with(|| "failed to write to file")?;
