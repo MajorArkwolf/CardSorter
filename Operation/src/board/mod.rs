@@ -1,5 +1,5 @@
 use super::network::connect;
-use color_eyre::eyre::{eyre, Context, Result};
+use color_eyre::eyre::{eyre, Context, Error, Report, Result};
 use firmata::asynchronous::{board::Board, boardio::BoardIo};
 use getset::Getters;
 use serde::{Deserialize, Serialize};
@@ -27,14 +27,15 @@ pub struct FirmataBoardTask {
     #[get = "pub"]
     board: Board,
     #[get = "pub"]
-    task: JoinHandle<()>,
+    task: JoinHandle<Result<(), Report>>,
 }
 
 impl FirmataBoardTask {
-    pub fn create(id: u32, board_io: FirmataBoardIo) -> Self {
+    pub fn create(id: u32, mut board_io: FirmataBoardIo) -> Self {
         let board = board_io.get_board();
         let task = tokio::task::spawn(async move {
-            board_io.poll().await;
+            board_io.poll().await?;
+            Ok::<(), Error>(())
         });
         Self { id, board, task }
     }
