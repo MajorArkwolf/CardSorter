@@ -121,7 +121,7 @@ impl Capture {
             }
             CaptureStates::ReleaseCard => {
                 info!("capture system releasing card");
-                let result = self.servo.set(90).await;
+                self.servo.set(90).await?;
                 tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
                 self.internal_state = CaptureStates::Finished;
             }
@@ -129,7 +129,7 @@ impl Capture {
                 let value = self.photo_resistor.get()?;
                 debug!("Photoresistor: {}", value);
                 if value > self.trigger {
-                    let result = self.servo.set(0).await;
+                    self.servo.set(0).await?;
                     tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
                     self.state = CircuitState::Waiting;
                     info!("capture system moving to waiting");
