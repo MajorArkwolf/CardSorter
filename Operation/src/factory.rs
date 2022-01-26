@@ -132,21 +132,21 @@ pub fn generate_mock_json() -> Result<()> {
         id: 1,
         board_id: 1,
         sensor_type: Type::Servo,
-        pins: vec![8],
+        pins: vec![3],
     };
 
     let sensor_2 = SensorTemplate {
         id: 2,
         board_id: 1,
         sensor_type: Type::PhotoResistor,
-        pins: vec![4],
+        pins: vec![0],
     };
 
     let sensor_3 = SensorTemplate {
         id: 3,
         board_id: 1,
         sensor_type: Type::MotorController,
-        pins: vec![4, 5, 0, 0],
+        pins: vec![6, 7, 0, 0],
     };
 
     let sensor_4 = SensorTemplate {
