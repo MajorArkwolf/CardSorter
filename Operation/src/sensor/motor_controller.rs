@@ -1,5 +1,6 @@
 use color_eyre::eyre::{eyre, Result};
 use firmata::asynchronous::board::Board;
+use getset::Getters;
 use std::io::{Read, Write};
 const MOTOR_A_PINS_INDEX: [usize; 2] = [0, 1];
 const MOTOR_B_PINS_INDEX: [usize; 2] = [2, 3];
@@ -25,8 +26,9 @@ impl Default for Movement {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Getters, Clone, Debug)]
 pub struct MotorController {
+    #[get = "pub"]
     id: u32,
     pins: [u8; 4],
     board: Board,

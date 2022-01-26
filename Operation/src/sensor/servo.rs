@@ -1,9 +1,11 @@
 use color_eyre::eyre::Result;
 use color_eyre::eyre::WrapErr;
 use firmata::asynchronous::board::Board;
+use getset::Getters;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Getters)]
 pub struct Servo {
+    #[get = "pub"]
     id: u32,
     pin: firmata::PinId,
     board: Board,
