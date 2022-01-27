@@ -49,9 +49,6 @@ async def card_request(library, request):
 
     card = Generate_Magic_Card(image)
 
-    if card.image == None:
-        card.image = image
-
     save_card(card)
     if card.found == True:
         card_search = library.Look_Up_Card(card)
