@@ -1,5 +1,5 @@
-use color_eyre::eyre::{eyre, Result};
-use firmata::asynchronous::board::Board;
+use color_eyre::eyre::{eyre, Result, WrapErr};
+use firmata::{asynchronous::board::Board, PinId, PinMode};
 use getset::Getters;
 
 const MOTOR_A_PINS_INDEX: [usize; 2] = [0, 1];
@@ -35,8 +35,17 @@ pub struct MotorController {
 }
 
 impl MotorController {
-    pub fn create(id: u32, pins: [u8; 4], board: Board) -> Self {
-        Self { id, pins, board }
+    pub async fn create(id: u32, pins: [u8; 4], mut board: Board) -> Result<Self> {
+        for pin in pins {
+            if pin > 0 {
+                let pin = PinId::Digital(pin);
+                board
+                    .set_pin_mode(pin, PinMode::Output)
+                    .await
+                    .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+            }
+        }
+        Ok(Self { id, pins, board })
     }
 
     pub async fn set(&mut self, motor: Motor, movement: Movement) -> Result<()> {

@@ -1,6 +1,7 @@
 use color_eyre::eyre::Result;
-use color_eyre::eyre::WrapErr;
+use color_eyre::eyre::{eyre, WrapErr};
 use firmata::asynchronous::board::Board;
+use firmata::PinMode;
 use getset::Getters;
 
 #[derive(Clone, Debug, Getters)]
@@ -12,10 +13,13 @@ pub struct Servo {
 }
 
 impl Servo {
-    pub fn create(id: u32, pin: u8, board: Board) -> Self {
+    pub async fn create(id: u32, pin: u8, mut board: Board) -> Result<Self> {
         let pin = firmata::PinId::Pin(pin);
-
-        Self { id, pin, board }
+        board
+            .set_pin_mode(pin, PinMode::Output)
+            .await
+            .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+        Ok(Self { id, pin, board })
     }
 
     pub async fn get(&mut self) -> Result<u16> {
