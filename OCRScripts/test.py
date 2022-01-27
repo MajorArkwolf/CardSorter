@@ -16,7 +16,9 @@ logging.info('Loading card data into memory')
 library = MTGLibrary(config["CARDDATA"])
 
 async def go():
-    request = ['type_of']['type'] = "TakePicture"
+    request = {}
+    request['type_of'] = {}
+    request['type_of']['type'] = "TakePicture"
     response = await card_request(library, request)
 
 asyncio.run(go())
