@@ -3,14 +3,15 @@ from MTGLibrary import *
 from Network import Response
 from camera import Camera
 
+camera = Camera()
+
 def from_binary(byte_stream):
     image = Get_Card_From_Bytes(byte_stream)
     return image
 
-def take_photo():
-    camera = Camera()
+async def take_photo():
     if camera.loaded == True:
-        return camera.capture_opencv()
+        return await camera.capture_opencv()
     else:
         raise Exception("Camera module not loaded")
 
@@ -24,7 +25,7 @@ async def card_request(library, request):
     elif request['type_of']['type'] == "FileLocation":
         image = load_from_file(request["data"])
     elif request['type_of']['type'] == "TakePicture":
-        image = take_photo()
+        image = await take_photo()
     else:
         return Response(-2, 0)
 

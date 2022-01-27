@@ -1,4 +1,5 @@
 import time
+import asyncio
 camera_lib_loaded = None
 try:
     import picamera
@@ -16,12 +17,14 @@ class Camera:
             self.camera.framerate = 24
             self.camera.resolution = (1920, 1440)
             self.camera.rotation = 180
+            self.lock = asyncio.Lock()
         self.loaded = camera_lib_loaded
 
-    def capture_opencv(self):
+    async def capture_opencv(self):
         if camera_lib_loaded == True:
             image = np.empty((self.camera.resolution[1] * self.camera.resolution[0] * 3), dtype=np.uint8)
-            self.camera.capture(image, 'bgr')
+            async with self.lock:
+                self.camera.capture(image, 'bgr')
             image = image.reshape((self.camera.resolution[1], self.camera.resolution[0], 3))
             return image
         else:
