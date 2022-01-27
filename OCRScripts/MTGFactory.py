@@ -83,9 +83,8 @@ def Generate_Magic_Card(image):
     card.image = image
     temp_name = Get_Card_Text(card_name)
     if len(temp_name) > 0:
+        card.found = True
         card.card_name = temp_name[0]
         card.copyright = Determine_Copyright_Year(bottom_text)
         card.flavour_text = Get_Card_Text(main_text)
-        return card
-    else:
-        return None
+    return card

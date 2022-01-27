@@ -1,3 +1,4 @@
+from numpy import imag
 from MTGFactory import Generate_Magic_Card, Get_Card_From_Bytes, Get_Card_From_File
 from MTGLibrary import *
 from Network import Response
@@ -47,8 +48,12 @@ async def card_request(library, request):
         return Response(-2, 0)
 
     card = Generate_Magic_Card(image)
+
+    if card.image == None:
+        card.image = image
+
     save_card(card)
-    if card != None:
+    if card.found == True:
         card_search = library.Look_Up_Card(card)
         return Response(0, 1)
     else:

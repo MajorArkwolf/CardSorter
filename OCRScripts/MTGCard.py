@@ -4,5 +4,6 @@ class MTGCard:
     flavour_text = ""
     copyright = 0
     image = None
+    found = False
 
 
