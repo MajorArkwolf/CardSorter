@@ -33,9 +33,11 @@
             "board_id": 1,
             "sensor_type": "MotorController",
             "pins": [
-                6,
                 7,
+                8,
                 0,
+                0,
+                6,
                 0
             ]
         },

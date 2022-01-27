@@ -48,8 +48,9 @@ impl Circuit for Feeder {
             CircuitState::Stopped => Ok(()),
         }
     }
-    fn stop(&mut self) {
+    async fn stop(&mut self) -> Result<()> {
         self.state = CircuitState::Stopped;
+        Ok(())
     }
 }
 
@@ -84,7 +85,7 @@ impl Feeder {
     async fn process_running(&mut self) -> Result<()> {
         let value = self.photo_resistor.get()?;
         debug!("Feeder running Value: {}, Trigger: {}", value, self.trigger);
-        if value >= self.trigger {
+        if value >= self.trigger || value == 0 {
             return Ok(());
         }
         info!(

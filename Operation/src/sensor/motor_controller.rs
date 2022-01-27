@@ -8,6 +8,32 @@ const MOTOR_FORWARD: [bool; 2] = [true, false];
 const MOTOR_REVERSE: [bool; 2] = [false, true];
 const MOTOR_STOP: [bool; 2] = [false, false];
 
+async fn check_and_set_pwm(pin: u8, board: &mut Board) -> Result<()> {
+    if pin > 0 {
+        let pin_id = PinId::Digital(pin);
+        let pins = board.pins();
+        if pins[pin as usize]
+            .modes
+            .iter()
+            .any(|f| f.mode == PinMode::Pwm)
+        {
+            board
+                .set_pin_mode(pin_id, PinMode::Pwm)
+                .await
+                .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+            board.analog_write(pin_id, 200).await?;
+        } else {
+            board
+                .set_pin_mode(pin_id, PinMode::Output)
+                .await
+                .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+            board.digital_write(pin_id, true).await?;
+        }
+    }
+
+    Ok(())
+}
+
 #[derive(Clone, Debug, Copy)]
 pub enum Motor {
     A,
@@ -35,7 +61,16 @@ pub struct MotorController {
 }
 
 impl MotorController {
-    pub async fn create(id: u32, pins: [u8; 4], mut board: Board) -> Result<Self> {
+    pub async fn create(
+        id: u32,
+        en_pins: [u8; 2],
+        pins: [u8; 4],
+        mut board: Board,
+    ) -> Result<Self> {
+        for pin in en_pins {
+            check_and_set_pwm(pin, &mut board).await?;
+        }
+
         for pin in pins {
             if pin > 0 {
                 let pin = PinId::Digital(pin);

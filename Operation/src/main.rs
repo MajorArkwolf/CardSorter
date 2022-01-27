@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     let mut system = factory::generate_system().await?;
     let calibration_results = circuit_constructor::calibrate_sensors(&mut system).await?;
     let mut circuit_controller =
-        circuit_constructor::construct_circuit(&mut system, &calibration_results)?;
+        circuit_constructor::construct_circuit(&mut system, &calibration_results).await?;
 
     circuit_controller.start().await?;
     debug!("Beginning circuit controller update cycle");

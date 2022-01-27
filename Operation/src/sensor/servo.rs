@@ -16,7 +16,7 @@ impl Servo {
     pub async fn create(id: u32, pin: u8, mut board: Board) -> Result<Self> {
         let pin = firmata::PinId::Pin(pin);
         board
-            .set_pin_mode(pin, PinMode::Output)
+            .set_pin_mode(pin, PinMode::Servo)
             .await
             .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
         Ok(Self { id, pin, board })

@@ -73,12 +73,14 @@ pub async fn generate_system() -> Result<System> {
         };
         match sensor.sensor_type {
             Type::MotorController => {
+                let mut en_pins: [u8; 2] = [0, 0];
                 let mut pins: [u8; 4] = [0, 0, 0, 0];
                 pins.copy_from_slice(&sensor.pins[0..4]);
+                en_pins.copy_from_slice(&sensor.pins[4..6]);
                 system
                     .sensors
                     .motor_controllers
-                    .push(MotorController::create(sensor.id, pins, board).await?)
+                    .push(MotorController::create(sensor.id, en_pins, pins, board).await?)
             }
             Type::PhotoResistor => system
                 .sensors

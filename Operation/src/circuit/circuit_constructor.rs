@@ -41,13 +41,14 @@ async fn calibrate_photo_resistor(
         tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
     off_average /= 20;
-
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
     debug!("Turning light on");
     //turn light on
     led_strip.set(on).await?;
     let mut on_average = 0;
     for _i in 1..20 {
         on_average += photo_pin.get()?;
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     }
     on_average /= 20;
 
@@ -126,7 +127,7 @@ fn construct_feeder(
     ))
 }
 
-fn construct_capture(
+async fn construct_capture(
     system: &mut System,
     calibration_results: &[CalibrationResult],
 ) -> Result<Capture> {
@@ -148,17 +149,18 @@ fn construct_capture(
         .find(|x| x.sensor_id == 2)
         .ok_or_else(|| eyre!("failed to find a calibration result that matches the id"))?
         .sensor_calibration_value;
-
-    Ok(Capture::create(
+    Capture::create(
         1,
         CircuitState::Waiting,
         servo.clone(),
         photo.clone(),
         value,
-    ))
+        "192.168.128.108:10000",
+    )
+    .await
 }
 
-pub fn construct_circuit(
+pub async fn construct_circuit(
     system: &mut System,
     calibration_results: &[CalibrationResult],
 ) -> Result<CircuitController> {
@@ -167,10 +169,9 @@ pub fn construct_circuit(
             system,
             calibration_results,
         )?))),
-        Arc::new(Mutex::new(Box::new(construct_capture(
-            system,
-            calibration_results,
-        )?))),
+        Arc::new(Mutex::new(Box::new(
+            construct_capture(system, calibration_results).await?,
+        ))),
     ];
     Ok(CircuitController::create(circuits))
 }
