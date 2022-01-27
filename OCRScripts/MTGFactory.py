@@ -18,7 +18,7 @@ def Get_Card_From_Bytes(byte_data):
 
 def Prep_Card_For_OCR(image):
     rot = detectAngle(image)
-    entire_card = crop_picture(rotate(image, 0), 0.17, 0.97, 0.30, 0.76)
+    entire_card = crop_picture(rotate(image, 90), 0.17, 0.97, 0.30, 0.76)
     entire_card = remove_background(entire_card)
     return entire_card
 

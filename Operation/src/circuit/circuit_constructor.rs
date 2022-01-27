@@ -27,7 +27,7 @@ async fn calibrate_photo_resistor(
     let photo_pin = &mut system.sensors.photo_resistor[0];
     let led_strip = &mut system.sensors.led_strips[0];
 
-    let on = PixelColor::new(-1, 255, 255, 255);
+    let on = PixelColor::new(-1, 255, 180, 80);
     let off = PixelColor::new(-1, 0, 0, 0);
 
     debug!("Turning light off");
