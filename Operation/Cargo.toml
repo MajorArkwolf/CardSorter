@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1"
 color-eyre = "0.6"
-firmata = {git = "https://github.com/MajorArkwolf/firmata-rust.git"}
+firmata = {path = "../../firmata-rust"}
 tokio = { version = "1.15", features = ["full"] }
 tokio-serial = "5.4"
 tracing = "0.1"

@@ -120,6 +120,7 @@ impl Capture {
                     self.state = CircuitState::Stopped;
                     return Err(eyre!(error_msg));
                 }
+                debug!("Card code {}", resp.value);
                 self.internal_state = CaptureStates::ReleaseCard;
             }
             CaptureStates::ReleaseCard => {
