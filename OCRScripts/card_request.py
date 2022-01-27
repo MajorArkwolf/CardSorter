@@ -25,7 +25,7 @@ def load_from_file(file_location):
     return Get_Card_From_File(file_location)
 
 def save_card(card):
-    dt_string = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    dt_string = datetime.now().strftime("%d-%m-%Y-%H:%M:%S")
     output_dir = file_path + dt_string
     os.makedirs(output_dir)
     if card.image is not None:
@@ -33,7 +33,7 @@ def save_card(card):
     file_name = output_dir + "/cardtext.txt"
     with open(file_name, 'w') as f:
         f.write("Card Name:" + card.card_name + '\n')
-        f.write("Card Copyright Year:" + card.copyright + '\n')
+        f.write("Card Copyright Year:" + str(card.copyright) + '\n')
         f.write("Card Flavor Text:" + card.flavour_text + '\n')
 
 async def card_request(library, request):
