@@ -15,8 +15,8 @@ class Camera:
         if camera_lib_loaded == True:
             self.camera = picamera.PiCamera()
             self.camera.framerate = 24
-            self.camera.resolution = (1440, 1920)
-            self.camera.rotation = 0
+            self.camera.resolution = (1920, 1440)
+            self.camera.rotation = 180
             self.lock = asyncio.Lock()
         self.loaded = camera_lib_loaded
 
