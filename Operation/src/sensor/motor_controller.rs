@@ -5,7 +5,7 @@ use getset::Getters;
 const MOTOR_A_PINS_INDEX: [usize; 2] = [0, 1];
 const MOTOR_B_PINS_INDEX: [usize; 2] = [2, 3];
 const MOTOR_FORWARD: [bool; 2] = [true, false];
-const MOTOR_REVERSE: [bool; 2] = [true, false];
+const MOTOR_REVERSE: [bool; 2] = [false, true];
 const MOTOR_STOP: [bool; 2] = [false, false];
 
 #[derive(Clone, Debug, Copy)]
