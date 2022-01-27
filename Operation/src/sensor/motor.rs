@@ -10,8 +10,9 @@ use crate::subscriber::Publisher;
 
 use super::IOSensor;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Getters)]
 pub struct Motor {
+    #[get = "pub"]
     id: u32,
     pin: firmata::PinId,
     #[serde(skip)]

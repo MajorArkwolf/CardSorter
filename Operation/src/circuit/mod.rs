@@ -17,6 +17,6 @@ pub trait Circuit {
     async fn get_id(&self) -> u32;
     async fn get_state(&self) -> CircuitState;
     async fn change_state(&mut self, next_state: CircuitState) -> Result<()>;
-    async fn update(&mut self);
-    async fn stop(&mut self);
+    async fn update(&mut self) -> Result<()>;
+    async fn stop(&mut self) -> Result<()>;
 }

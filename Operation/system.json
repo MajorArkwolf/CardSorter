@@ -2,78 +2,50 @@
     "boards": [
         {
             "id": 1,
-            "identifier": "sketch_aug26a.ino",
-            "comm_type": {
-                "Serial": {
-                    "baud_rate": 57600
-                }
-            }
+            "identifier": "FirmataBoard.ino",
+            "address": "192.168.128.10:3030"
         },
         {
             "id": 2,
-            "identifier": "NeoPixel.ino",
-            "comm_type": {
-                "Serial": {
-                    "baud_rate": 57600
-                }
-            }
+            "identifier": "FirmataBoard2.ino",
+            "address": "192.168.128.11:3030"
         }
     ],
     "sensors": [
         {
-            "sensor": {
-                "Servo": {
-                    "id": 1,
-                    "pin": {
-                        "Pin": 9
-                    }
-                }
-            },
-            "board_id": 1
+            "id": 1,
+            "board_id": 1,
+            "sensor_type": "Servo",
+            "pins": [
+                3
+            ]
         },
         {
-            "sensor": {
-                "PhotoResistor": {
-                    "id": 2,
-                    "pin": {
-                        "Analog": 0
-                    }
-                }
-            },
-            "board_id": 1
+            "id": 2,
+            "board_id": 1,
+            "sensor_type": "PhotoResistor",
+            "pins": [
+                0
+            ]
         },
         {
-            "sensor": {
-                "MotorController": {
-                    "id": 3,
-                    "pins": [
-                        4,
-                        5,
-                        0,
-                        0
-                    ]
-                }
-            },
-            "board_id": 1
+            "id": 3,
+            "board_id": 1,
+            "sensor_type": "MotorController",
+            "pins": [
+                7,
+                8,
+                0,
+                0,
+                6,
+                0
+            ]
         },
         {
-            "sensor": {
-                "LedStrip": {
-                    "id": 4
-                }
-            },
-            "board_id": 2
-        },
-        {
-            "sensor": {
-                "PhotoResistor": {
-                    "id": 5,
-                    "pin": {
-                        "Analog": 0
-                    }
-                }
-            },
-            "board_id": 2
+            "id": 4,
+            "board_id": 2,
+            "sensor_type": "LedStrip",
+            "pins": []
         }
     ]
 }

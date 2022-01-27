@@ -1,11 +1,10 @@
 use crate::circuit;
 use crate::sensor;
-use crate::sensor::servo::ServoPublisher;
 use async_trait::async_trait;
 use circuit::{Circuit, CircuitState};
 use color_eyre::eyre::{eyre, Result};
-use sensor::motor_controller::{Motor, MotorControllerMessage, Movement};
-use sensor::{motor_controller::MotorControllerPublisher, photo_resistor::PhotoResistorSubscriber};
+use sensor::motor_controller::{Motor, Movement};
+use sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor, servo::Servo};
 use tracing::debug;
 use tracing::{info, instrument};
 
@@ -13,10 +12,10 @@ use tracing::{info, instrument};
 pub struct Feeder {
     id: u32,
     state: CircuitState,
-    motor_cont: MotorControllerPublisher,
-    photo_resistor: PhotoResistorSubscriber,
-    servo: ServoPublisher,
-    trigger: i32,
+    motor_cont: MotorController,
+    photo_resistor: PhotoResistor,
+    servo: Servo,
+    trigger: u16,
 }
 
 #[async_trait]
@@ -41,25 +40,28 @@ impl Circuit for Feeder {
     }
 
     #[instrument(skip_all)]
-    async fn update(&mut self) {
+    async fn update(&mut self) -> Result<()> {
         match self.state {
             CircuitState::Ready => self.process_ready().await,
             CircuitState::Running => self.process_running().await,
             CircuitState::Waiting => self.process_waiting(),
-            CircuitState::Stopped => return,
+            CircuitState::Stopped => Ok(()),
         }
     }
-    async fn stop(&mut self) {}
+    async fn stop(&mut self) -> Result<()> {
+        self.state = CircuitState::Stopped;
+        Ok(())
+    }
 }
 
 impl Feeder {
     pub fn create(
         id: u32,
         state: CircuitState,
-        motor_cont: MotorControllerPublisher,
-        photo_resistor: PhotoResistorSubscriber,
-        servo: ServoPublisher,
-        trigger: i32,
+        motor_cont: MotorController,
+        photo_resistor: PhotoResistor,
+        servo: Servo,
+        trigger: u16,
     ) -> Self {
         Self {
             id,
@@ -72,51 +74,32 @@ impl Feeder {
     }
 
     #[instrument(skip_all)]
-    async fn process_ready(&mut self) {
-        let result = self.servo.set(0).await;
-        match result {
-            Ok(_) => {}
-            Err(_) => {
-                self.state = CircuitState::Stopped;
-                return;
-            }
-        }
-        let result = self
-            .motor_cont
-            .set(MotorControllerMessage::create(Motor::A, Movement::Forward))
-            .await;
-        match result {
-            Ok(_) => self.state = CircuitState::Running,
-            Err(_) => self.state = CircuitState::Stopped,
-        }
+    async fn process_ready(&mut self) -> Result<()> {
+        self.servo.set(0).await?;
+        self.motor_cont.set(Motor::A, Movement::Forward).await?;
+        self.state = CircuitState::Running;
+        Ok(())
     }
 
     #[instrument(skip_all)]
-    async fn process_running(&mut self) {
-        let value = self.photo_resistor.get().await;
-        let value = match value {
-            Ok(v) => v,
-            Err(_) => return,
-        };
+    async fn process_running(&mut self) -> Result<()> {
+        let value = self.photo_resistor.get()?;
         debug!("Feeder running Value: {}, Trigger: {}", value, self.trigger);
-        if value >= self.trigger {
-            return;
+        if value >= self.trigger || value == 0 {
+            return Ok(());
         }
         info!(
             "trigger `{}` value `{}` hit, moving to waiting",
             self.trigger, value
         );
-        let result = self
-            .motor_cont
-            .set(MotorControllerMessage::create(Motor::A, Movement::Stop))
-            .await;
+        self.motor_cont.set(Motor::A, Movement::Stop).await?;
 
-        match result {
-            Ok(_) => self.state = CircuitState::Waiting,
-            Err(_) => self.state = CircuitState::Stopped,
-        }
+        self.state = CircuitState::Waiting;
+        Ok(())
     }
 
     #[instrument(skip_all)]
-    fn process_waiting(&mut self) {}
+    fn process_waiting(&mut self) -> Result<()> {
+        Ok(())
+    }
 }

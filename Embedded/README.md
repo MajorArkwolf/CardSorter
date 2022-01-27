@@ -1,3 +1,8 @@
+##
+Firmata sketches are from the firmata arduino github and have their own licenses inside their folder.
+
+Firmataboard 2 NeoPixelPlugin.h and .cpp was written by the author of the CardSorter repo and applies to the repos license.
+
 ## Board Layout
 
 ### Board 1

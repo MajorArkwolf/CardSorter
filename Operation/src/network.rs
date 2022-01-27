@@ -6,6 +6,13 @@ use serde::{Deserialize, Serialize};
 use tokio::net::{TcpStream, ToSocketAddrs};
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
 
+pub async fn connect<A: ToSocketAddrs>(addr: A) -> Result<TcpStream> {
+    let stream = TcpStream::connect(&addr)
+        .await
+        .wrap_err_with(|| "failed to connect to network device")?;
+    Ok(stream)
+}
+
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "type")]
 pub enum PictureFormat {
@@ -39,9 +46,7 @@ pub struct Network {
 
 impl Network {
     pub async fn connect<A: ToSocketAddrs>(addr: A) -> Result<Self> {
-        let stream = TcpStream::connect(&addr)
-            .await
-            .wrap_err_with(|| "failed to connect to network device")?;
+        let stream = connect(addr).await?;
         let framed_stream = Framed::new(stream, LengthDelimitedCodec::new());
         Ok(Self { framed_stream })
     }
