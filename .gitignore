@@ -10,3 +10,4 @@ TestData/
 .env
 *.json
 *.log
+card-output/

@@ -17,6 +17,9 @@ class Camera:
             self.camera.framerate = 24
             self.camera.resolution = (1920, 1440)
             self.camera.rotation = 180
+            self.camera.led = False
+            
+            time.sleep(2)
             self.lock = asyncio.Lock()
         self.loaded = camera_lib_loaded
 
