@@ -3,6 +3,10 @@ Firmata sketches are from the firmata arduino github and have their own licenses
 
 Firmataboard 2 NeoPixelPlugin.h and .cpp was written by the author of the CardSorter repo and applies to the repos license.
 
+## Dependencies
+- Adafruit VL6180X
+- Adafruit PCA9685
+
 ## Board Layout
 
 ### Board 1
