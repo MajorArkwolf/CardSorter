@@ -1,105 +1,117 @@
+use std::sync::Arc;
+
 use crate::circuit;
 use crate::sensor;
 use async_trait::async_trait;
-use circuit::{Circuit, CircuitState};
-use color_eyre::eyre::{eyre, Result};
+use circuit::Circuit;
+use color_eyre::eyre::{eyre, Result, WrapErr};
 use sensor::motor_controller::{Motor, Movement};
-use sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor, servo::Servo};
+use sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor};
+use tokio::sync::watch;
+use tokio::sync::Notify;
 use tracing::debug;
 use tracing::{info, instrument};
 
-#[derive(Clone, Debug)]
-pub struct Feeder {
-    id: u32,
-    state: CircuitState,
-    motor_cont: MotorController,
-    photo_resistor: PhotoResistor,
-    servo: Servo,
-    trigger: u16,
+use circuit::State;
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum InternalState {
+    Waiting,
+    MotorOn,
+    WaitingForTrigger,
+    Stopped,
 }
 
-#[async_trait]
-impl Circuit for Feeder {
-    #[instrument(skip_all)]
-    async fn get_id(&self) -> u32 {
-        self.id
-    }
-
-    #[instrument(skip_all)]
-    async fn get_state(&self) -> CircuitState {
-        self.state
-    }
-
-    #[instrument]
-    async fn change_state(&mut self, next_state: CircuitState) -> Result<()> {
-        if self.state == CircuitState::Stopped {
-            return Err(eyre!("tried to set from stopped"));
-        }
-        self.state = next_state;
-        Ok(())
-    }
-
-    #[instrument(skip_all)]
-    async fn update(&mut self) -> Result<()> {
-        match self.state {
-            CircuitState::Ready => self.process_ready().await,
-            CircuitState::Running => self.process_running().await,
-            CircuitState::Waiting => self.process_waiting(),
-            CircuitState::Stopped => Ok(()),
-        }
-    }
-    async fn stop(&mut self) -> Result<()> {
-        self.state = CircuitState::Stopped;
-        Ok(())
-    }
+pub struct Feeder {
+    id: u32,
+    external_state: State,
+    start_trigger: Arc<Notify>,
+    end_trigger: Arc<Notify>,
+    motor_cont: MotorController,
+    internal_state: InternalState,
 }
 
 impl Feeder {
     pub fn create(
         id: u32,
-        state: CircuitState,
+        external_state: State,
+        start_trigger: Arc<Notify>,
+        end_trigger: Arc<Notify>,
         motor_cont: MotorController,
-        photo_resistor: PhotoResistor,
-        servo: Servo,
-        trigger: u16,
     ) -> Self {
         Self {
             id,
-            state,
+            external_state,
+            start_trigger,
+            end_trigger,
             motor_cont,
-            photo_resistor,
-            servo,
-            trigger,
+            internal_state: InternalState::Waiting,
         }
     }
+}
 
-    #[instrument(skip_all)]
-    async fn process_ready(&mut self) -> Result<()> {
-        self.servo.set(0).await?;
-        self.motor_cont.set(Motor::A, Movement::Forward).await?;
-        self.state = CircuitState::Running;
-        Ok(())
+#[async_trait]
+impl Circuit for Feeder {
+    fn get_id(&self) -> u32 {
+        self.id
     }
 
-    #[instrument(skip_all)]
-    async fn process_running(&mut self) -> Result<()> {
-        let value = self.photo_resistor.get()?;
-        debug!("Feeder running Value: {}, Trigger: {}", value, self.trigger);
-        if value >= self.trigger || value == 0 {
-            return Ok(());
-        }
-        info!(
-            "trigger `{}` value `{}` hit, moving to waiting",
-            self.trigger, value
-        );
+    fn get_state(&self) -> State {
+        self.external_state
+    }
+
+    fn set_state(&mut self, state: State) {
+        self.external_state = state;
+    }
+
+    async fn stop(&mut self) -> Result<()> {
         self.motor_cont.set(Motor::A, Movement::Stop).await?;
-
-        self.state = CircuitState::Waiting;
+        self.internal_state = InternalState::Stopped;
         Ok(())
     }
 
-    #[instrument(skip_all)]
-    fn process_waiting(&mut self) -> Result<()> {
+    async fn setup(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    async fn run(&mut self) -> Result<()> {
+        match self.internal_state {
+            InternalState::Waiting => {
+                if self.external_state == State::Running {
+                    self.start_trigger.notified().await;
+                    self.internal_state = InternalState::MotorOn;
+                    debug!("Feeder circuit has been notified");
+                } else if self.external_state == State::Ending {
+                    /*
+                    We change the external state to waiting once we are back
+                    at the beginning since a ending is recoverable and
+                    acts as a notification back out to the task above.
+                    */
+                    self.external_state = State::Waiting;
+                }
+            }
+            InternalState::MotorOn => {
+                debug!("Feeder circuit turning motor on");
+                self.motor_cont.set(Motor::A, Movement::Forward).await?;
+                self.internal_state = InternalState::WaitingForTrigger;
+                // Artifical sleep for testing.
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+            }
+            InternalState::WaitingForTrigger => {
+                // add stop trigger
+                debug!("Feeder circuit turning motor off");
+                self.motor_cont.set(Motor::A, Movement::Stop).await?;
+                self.internal_state = InternalState::Waiting;
+                self.end_trigger.notify_one();
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+            }
+            InternalState::Stopped => {
+                debug!("Feeder circuit stopping");
+                return Err(eyre!(
+                    "progress circuit was meant to be stopped and should not have reached here."
+                ));
+            }
+        }
         Ok(())
     }
 }

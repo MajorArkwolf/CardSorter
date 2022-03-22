@@ -17,7 +17,8 @@ getset = "0.1"
 async-channel = "1.6"
 console-subscriber = {version = "0.1", features=["parking_lot"]}
 enum-as-inner = "0.3"
-tokio-util = "0.6"
+tokio-util = {version = "0.7", features=["codec"]}
 futures = "0.3"
 bytes = "1.1"
 serde-pickle = "1"
+#pyo3 = {version = "0.15", features= ["auto-initialize"]}

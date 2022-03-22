@@ -45,15 +45,6 @@ impl Motor {
         board.digital_write(self.pin, value as i32)?;
         Ok(())
     }
-
-    fn publisher(&mut self) -> MotorPublisher {
-        let (tx, rx) = async_channel::bounded::<bool>(20);
-        self.rx_array.push(rx);
-
-        MotorPublisher {
-            publisher: Publisher::create(tx),
-        }
-    }
 }
 
 impl IOSensor for Motor {
@@ -64,18 +55,6 @@ impl IOSensor for Motor {
     fn register<T: Read + Write>(&mut self, board: &mut firmata::Board<T>) -> Result<()> {
         board
             .set_pin_mode(self.pin, firmata::OutputMode::ANALOG)
-            .wrap_err_with(|| "failed to create servo")
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct MotorPublisher {
-    publisher: Publisher<bool>,
-}
-
-impl MotorPublisher {
-    #[instrument]
-    pub async fn set(&mut self, value: bool) -> Result<()> {
-        self.publisher.set(value).await
+            .wrap_err_with(|| "failed to create motor")
     }
 }

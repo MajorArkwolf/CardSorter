@@ -57,6 +57,6 @@ impl SensorContainer {
             return Type::LedStrip;
         }
 
-        return Type::None;
+        Type::None
     }
 }

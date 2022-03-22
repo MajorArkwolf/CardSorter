@@ -10,7 +10,7 @@ const MOTOR_STOP: [bool; 2] = [false, false];
 
 async fn check_and_set_pwm(pin: u8, board: &mut Board) -> Result<()> {
     if pin > 0 {
-        let pin_id = PinId::Digital(pin);
+        let pin_id = PinId::Pin(pin);
         let pins = board.pins();
         if pins[pin as usize]
             .modes
@@ -20,13 +20,13 @@ async fn check_and_set_pwm(pin: u8, board: &mut Board) -> Result<()> {
             board
                 .set_pin_mode(pin_id, PinMode::Pwm)
                 .await
-                .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
-            board.analog_write(pin_id, 200).await?;
+                .wrap_err_with(|| eyre!("failed to set pwm pin for motorcontroller"))?;
+            board.analog_write(pin_id, 255).await?;
         } else {
             board
                 .set_pin_mode(pin_id, PinMode::Output)
                 .await
-                .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+                .wrap_err_with(|| eyre!("failed to set digital pin for motorcontroller"))?;
             board.digital_write(pin_id, true).await?;
         }
     }
@@ -77,7 +77,9 @@ impl MotorController {
                 board
                     .set_pin_mode(pin, PinMode::Output)
                     .await
-                    .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+                    .wrap_err_with(|| {
+                        eyre!("failed to set pin mode for drive pins in motor controller")
+                    })?;
             }
         }
         Ok(Self { id, pins, board })
@@ -104,7 +106,7 @@ impl MotorController {
         };
         for (i, pin) in pins.iter().enumerate() {
             self.board
-                .digital_write(firmata::PinId::Digital(*pin), digital_assignment[i])
+                .digital_write(firmata::PinId::Pin(*pin), digital_assignment[i])
                 .await?;
         }
         Ok(())

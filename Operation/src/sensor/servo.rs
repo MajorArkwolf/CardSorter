@@ -18,7 +18,7 @@ impl Servo {
         board
             .set_pin_mode(pin, PinMode::Servo)
             .await
-            .wrap_err_with(|| eyre!("failed to register photo resistor"))?;
+            .wrap_err_with(|| eyre!("failed to register servo"))?;
         Ok(Self { id, pin, board })
     }
 
