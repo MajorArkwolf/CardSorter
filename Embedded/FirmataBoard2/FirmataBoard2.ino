@@ -70,6 +70,8 @@
 //#include "utility/EthernetClientStream.h"
 #include "utility/EthernetServerStream.h"
 
+#include "src/PluginManager.h"
+
 /*
  * Uncomment the following include to enable interfacing with Serial devices via hardware or
  * software serial.
@@ -129,6 +131,9 @@ EthernetServerStream stream(IPAddress(0, 0, 0, 0), network_port);
 #ifdef FIRMATA_SERIAL_FEATURE
 SerialFirmata serialFeature;
 #endif
+
+/* Ark Plugin System */
+Ark::PluginManager* pluginManager = nullptr;
 
 /* analog inputs */
 int analogInputsToReport = 0;      // bitwise array to store pin reporting
@@ -194,20 +199,10 @@ byte wireRead(void)
   return Wire.receive();
 #endif
 }
-/*==============================================================================
- * Neo Pixel
- *============================================================================*/
-
-#define NEO_PIN 3
-#define STRIP_LEN 24
-
-#include "src/NeoPixelPlugin.h"
-
-NeoPixelPlugin *g_neoPixel = nullptr;
 
 void stringCallback(char *myString)
 {
-  g_neoPixel->ParseMessage(String(myString));
+
 }
 /*==============================================================================
  * FUNCTIONS
@@ -580,6 +575,13 @@ void sysexCallback(byte command, byte argc, byte *argv)
   int slaveRegister;
   unsigned int delayTime;
 
+  // user defined commands
+  if (command >= 0x01 && command <= 0x0F) {
+    pluginManager->HandleMessage(argc, argv);
+    return;
+  }
+  // end of user defined command
+
   switch (command) {
     case I2C_REQUEST:
       mode = argv[1] & I2C_READ_WRITE_MODE_MASK;
@@ -951,7 +953,8 @@ void initFirmata()
 void setup()
 {
 
-  g_neoPixel = new NeoPixelPlugin(NEO_PIN, STRIP_LEN);
+  pluginManager = new Ark::PluginManager();
+
   DEBUG_BEGIN(9600);
 
   initTransport();
