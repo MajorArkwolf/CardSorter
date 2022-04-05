@@ -11,8 +11,15 @@ namespace Ark::Network {
     };
 
     struct Payload {
-        Header header;
-        int numOfBytes;
+        ~Payload();
+        Header *header;
+        int *numOfBytes;
         byte *content;
     };
+
+    /**
+    * Generates a generic Payload object used by the devices to communicate.
+    * Payload object will take complete ownership of the heap allocated byte array.
+    */
+    static Payload GeneratePayload(int numberOfBytes, byte* byteArray);
 }
