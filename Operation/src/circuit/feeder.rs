@@ -72,6 +72,7 @@ impl Circuit for Feeder {
     }
 
     async fn run(&mut self) -> Result<()> {
+        debug!("Feeder {} run process started", self.get_id());
         match self.internal_state {
             InternalState::Waiting => {
                 if self.external_state == State::Running {

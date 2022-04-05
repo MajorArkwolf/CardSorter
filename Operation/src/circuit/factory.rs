@@ -5,7 +5,7 @@ use crate::{
     sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor},
 };
 use std::sync::Arc;
-
+use tracing::{debug, info};
 use crate::circuit::{Circuit, CircuitWatcher, State};
 use color_eyre::eyre::{eyre, Result};
 use tokio::{
@@ -87,12 +87,11 @@ pub async fn generat_distributor() -> Result<()> {
 }
 
 pub async fn generate_circuits(
-    overseer: &mut Overseer,
+    overseer_channel: OverseerChannel,
     system: &mut System,
 ) -> Result<CircuitWatcher> {
     let (tx, rx) = watch::channel(State::Waiting);
-    let channel = overseer.get_comm_channels();
-    let mut watcher = CircuitWatcher::create(tx);
+    let mut watcher = CircuitWatcher::create(tx, overseer_channel);
     let feeder_id: u32 = 1;
     let feeder_start = Arc::new(Notify::new());
     feeder_start.notify_one();
@@ -107,6 +106,6 @@ pub async fn generate_circuits(
     // clone overseer channels
 
     // move circuit into task and append to list of circuits
-
+    info!("Circuit generation complete");
     Ok(watcher)
 }

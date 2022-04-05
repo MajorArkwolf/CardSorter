@@ -5,6 +5,7 @@ use color_eyre::eyre::{eyre, Context, Result};
 use std::time::Duration;
 use tokio::signal;
 use tokio::time::timeout;
+use tracing::{info, debug, error};
 
 #[derive(Debug)]
 pub struct Overseer {
@@ -68,7 +69,7 @@ impl Overseer {
             }
 
             // Get message from response channel, we give a grace period of 1 second before we assume nothing else is coming
-            let message = timeout(Duration::from_secs(1), self.rx.recv())
+            let message = timeout(Duration::from_secs(100), self.rx.recv())
                 .await
                 .wrap_err_with(|| {
                     "during overseer startup a response took longer then a second to recieve"
@@ -128,8 +129,10 @@ impl Overseer {
     }
 
     pub async fn run(&mut self) -> Result<()> {
+        info!("Starting up oveerseer, issuing start up command");
         self.start_up().await?;
 
+        info!("Oveerseer startup completing beginning main loop");
         loop {
             // Listen for circuit notifications or signals from the OS
             tokio::select! {
@@ -140,6 +143,7 @@ impl Overseer {
                     }
                 }
                 _ = signal::ctrl_c() => {
+                    debug!("sigstop was issued, relaying to subscribers");
                     self.broadcast(Signal::Stop).await?;
                 }
             }
