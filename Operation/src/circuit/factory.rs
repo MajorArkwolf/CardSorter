@@ -1,11 +1,11 @@
 use crate::{
-    backbone::{message::OverseerChannel, overseer::Overseer},
+    backbone::{message::OverseerChannel},
     circuit::feeder::Feeder,
     factory::System,
-    sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor},
+    sensor::{motor_controller::MotorController},
 };
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::{info};
 use crate::circuit::{Circuit, CircuitWatcher, State};
 use color_eyre::eyre::{eyre, Result};
 use tokio::{

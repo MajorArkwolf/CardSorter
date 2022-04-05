@@ -5,7 +5,7 @@ use color_eyre::eyre::{eyre, Context, Result};
 use std::time::Duration;
 use tokio::signal;
 use tokio::time::timeout;
-use tracing::{info, debug, error};
+use tracing::{info, debug};
 
 #[derive(Debug)]
 pub struct Overseer {

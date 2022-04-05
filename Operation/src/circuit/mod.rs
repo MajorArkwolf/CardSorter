@@ -3,14 +3,14 @@ pub mod factory;
 pub mod feeder;
 use std::{sync::Arc, mem};
 
-use futures::{stream::FuturesUnordered, FutureExt, TryFutureExt};
+use futures::{stream::FuturesUnordered};
 use async_trait::async_trait;
 use color_eyre::eyre::{eyre, Result};
 use tokio::{sync::{watch, Mutex}, task::JoinHandle};
 use tokio_stream::StreamExt;
 use tracing::{info, debug, error};
 
-use crate::backbone::message::{OverseerChannel, Signal, SignalMessage};
+use crate::backbone::message::{OverseerChannel, Signal};
 
 #[async_trait]
 pub trait Circuit {

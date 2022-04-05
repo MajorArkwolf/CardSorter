@@ -10,7 +10,7 @@ use futures::stream::FuturesUnordered;
 use tokio::task::JoinHandle;
 use tracing::{debug, info};
 use tokio_stream::StreamExt;
-use color_eyre::eyre::{eyre, Context, Result};
+use color_eyre::eyre::{eyre, Result};
 
 use crate::backbone::overseer::Overseer;
 //use std::time::{Duration, Instant};

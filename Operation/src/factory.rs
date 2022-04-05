@@ -1,14 +1,8 @@
 use crate::board::{generate_board_io, BoardTemplate, FirmataBoardTask};
-use crate::sensor::led_strip::LedStrip;
-use crate::sensor::motor_controller::MotorController;
-use crate::sensor::photo_resistor::PhotoResistor;
-use crate::sensor::servo::Servo;
-use crate::sensor::{SensorContainer, SensorTemplate, Type};
 use color_eyre::eyre::{eyre, Context, Result};
 use std::io::Read;
 use std::{
-    fs::{self, File},
-    vec,
+    fs::{File},
 };
 
 use tracing::info;
