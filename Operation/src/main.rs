@@ -26,9 +26,6 @@ async fn main() -> Result<()> {
     let mut system = factory::generate_system().await?;
     let mut circuit_watcher =
         circuit::factory::generate_circuits(overseer_channel, &mut system).await?;
-    //let calibration_results = circuit_constructor::calibrate_sensors(&mut system).await?;
-    //let mut circuit_controller =
-    //    circuit_constructor::construct_circuit(&mut system, &calibration_results).await?;
 
     let mut main_tasks: FuturesUnordered<JoinHandle<Result<String>>> = FuturesUnordered::new();
     info!("Beginning circuit watcher task.");
