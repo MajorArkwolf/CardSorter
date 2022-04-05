@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1"
 color-eyre = "0.6"
-firmata = {path = "../../firmata-rust"}
+firmata = {git = "https://github.com/MajorArkwolf/firmata-rust.git"}
 tokio = { version = "1.15", features = ["full"] }
 tokio-serial = "5.4"
 tracing = "0.1"
@@ -18,6 +18,7 @@ async-channel = "1.6"
 console-subscriber = {version = "0.1", features=["parking_lot"]}
 enum-as-inner = "0.3"
 tokio-util = {version = "0.7", features=["codec"]}
+tokio-stream = "0.1"
 futures = "0.3"
 bytes = "1.1"
 serde-pickle = "1"
