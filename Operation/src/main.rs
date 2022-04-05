@@ -30,46 +30,43 @@ async fn main() -> Result<()> {
     //let mut circuit_controller =
     //    circuit_constructor::construct_circuit(&mut system, &calibration_results).await?;
 
-    let mut main_tasks: FuturesUnordered<JoinHandle<Result<()>>> = FuturesUnordered::new();
+    let mut main_tasks: FuturesUnordered<JoinHandle<Result<String>>> = FuturesUnordered::new();
     info!("Beginning circuit watcher task.");
     main_tasks.push(
         tokio::task::spawn(async move {
         circuit_watcher.run().await?;
-        debug!("circuit tasked ended");
-        Ok(())
+        drop(circuit_watcher);
+        Ok("circuit watcher tasked ended".to_string())
     }));
 
     info!("Beginning overseer task.");
     main_tasks.push(
         tokio::task::spawn(async move {
-        loop {
-            overseer.run().await?;
-        }
-        debug!("overseer tasked ended");
-        Ok(())
+        overseer.run().await?;
+        drop(overseer);
+        Ok("overseer tasked ended".to_string())
     }));
     info!("Task creation complete, system running");
 
-    loop {
-        while let Some(task) = main_tasks.next().await {
-            match task {
-                Ok(v) => {
-                    match v {
-                        Ok(_) => {
-                            debug!("a task ended with an ok result");
-                        },
-                        Err(err) => {
-                            return Err(eyre!("task returned a failrue: {:?}", err));
-                        },
-                    }
-                    
-                },
-                Err(err) => {
-                    return Err(eyre!("task failed to join, terminating program: {:?}", err));
-                },
-            }
+    while let Some(task) = main_tasks.next().await {
+        match task {
+            Ok(v) => {
+                match v {
+                    Ok(res) => {
+                        debug!("Main Task Finished: {}", res);
+                        
+                    },
+                    Err(err) => {
+                        return Err(eyre!("task returned a failrue: {:?}", err));
+                    },
+                }
+                
+            },
+            Err(err) => {
+                return Err(eyre!("task failed to join, terminating program: {:?}", err));
+            },
         }
     }
-    
+    info!("process and sub tasks succesfully ended, goodbye.");
     Ok(())
 }

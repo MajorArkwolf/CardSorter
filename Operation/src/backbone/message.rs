@@ -22,14 +22,26 @@ pub struct OverseerChannel {
     pub tx: ResponseChannelTX,
 }
 
+impl Drop for OverseerChannel {
+    fn drop(&mut self) {
+        drop(&self.rx);
+        drop(&self.tx);
+    }
+}
+
 impl OverseerChannel {
     pub fn create(rx: BroadcasterRX, tx: ResponseChannelTX) -> Self {
         Self { rx, tx }
     }
 
     pub async fn acknowledge(&mut self) -> Result<()> {
-        self.tx.send(SignalMessage::create_simple(Signal::Ack)).await
-        .wrap_err_with(|| eyre!("failed to send acknowledgement back to the oversser"))
+        if !self.tx.is_closed() {
+            self.tx.send(SignalMessage::create_simple(Signal::Ack)).await
+            .wrap_err_with(|| eyre!("failed to send acknowledgement back to the oversser"))
+        } else {
+            Ok(())
+        }
+        
     }
 }
 

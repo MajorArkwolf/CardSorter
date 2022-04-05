@@ -145,10 +145,13 @@ impl Overseer {
                 _ = signal::ctrl_c() => {
                     debug!("sigstop was issued, relaying to subscribers");
                     self.broadcast(Signal::Stop).await?;
+                    break;
                 }
             }
         }
 
+        self.rx.close();
+        info!("All registered circuits have been closed, overseer shutting down");
         Ok(())
     }
 }
