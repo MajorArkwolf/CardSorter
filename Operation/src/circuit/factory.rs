@@ -6,7 +6,7 @@ use crate::{
 };
 use std::sync::Arc;
 use tracing::{info};
-use crate::circuit::{Circuit, CircuitWatcher, State};
+use crate::circuit::{Circuit, circuitwatcher::CircuitWatcher, State};
 use color_eyre::eyre::{eyre, Result};
 use tokio::{
     sync::{watch, Notify},
