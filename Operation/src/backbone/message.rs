@@ -1,3 +1,5 @@
+use color_eyre::eyre::{Result, Context, eyre};
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Signal {
     Kill, // Kill commands should be treated as immediate stops, anything that is moving needs to stop if/when possible.
@@ -24,6 +26,11 @@ impl OverseerChannel {
     pub fn create(rx: BroadcasterRX, tx: ResponseChannelTX) -> Self {
         Self { rx, tx }
     }
+
+    pub async fn acknowledge(&mut self) -> Result<()> {
+        self.tx.send(SignalMessage::create_simple(Signal::Ack)).await
+        .wrap_err_with(|| eyre!("failed to send acknowledgement back to the oversser"))
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -35,5 +42,9 @@ pub struct SignalMessage {
 impl SignalMessage {
     pub fn create(signal: Signal, time_stamp: std::time::Instant) -> Self {
         Self { signal, time_stamp }
+    }
+
+    pub fn create_simple(signal: Signal) -> Self {
+        Self {signal, time_stamp: std::time::Instant::now()}
     }
 }
