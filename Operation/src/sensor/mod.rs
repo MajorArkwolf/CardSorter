@@ -19,7 +19,7 @@ pub enum Type {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SensorTemplate {
+pub struct Template {
     pub id: u32,
     pub board_id: u32,
     pub sensor_type: Type,
@@ -27,14 +27,15 @@ pub struct SensorTemplate {
 }
 
 #[derive(Getters, Setters, MutGetters, Debug, Clone, Default)]
-pub struct SensorContainer {
+pub struct Container {
     pub motor_controllers: Vec<MotorController>,
     pub photo_resistor: Vec<PhotoResistor>,
     pub servos: Vec<Servo>,
     pub led_strips: Vec<LedStrip>,
 }
 
-impl SensorContainer {
+impl Container {
+    #[must_use]
     pub fn find_sensor_by_id(&self, id: u32) -> Type {
         let found = self.motor_controllers.iter().any(|y| *y.id() == id);
         if found {
