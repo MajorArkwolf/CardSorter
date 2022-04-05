@@ -109,7 +109,7 @@ impl Overseer {
             Signal::Stop => {
                 self.broadcast(Signal::Stop).await?;
                 Err(eyre!(
-                    "recieved a kill signal from circuit, terminating program. {:?}",
+                    "recieved a stop signal from circuit, terminating program. {:?}",
                     message,
                 ))
             }
