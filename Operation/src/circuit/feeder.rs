@@ -4,14 +4,11 @@ use crate::circuit;
 use crate::sensor;
 use async_trait::async_trait;
 use circuit::Circuit;
-use color_eyre::eyre::{eyre, Result, WrapErr};
+use color_eyre::eyre::{eyre, Result};
 use sensor::motor_controller::{Motor, Movement};
-use sensor::{motor_controller::MotorController, photo_resistor::PhotoResistor};
-use tokio::sync::watch;
+use sensor::{motor_controller::MotorController};
 use tokio::sync::Notify;
 use tracing::debug;
-use tracing::{info, instrument};
-
 use circuit::State;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
