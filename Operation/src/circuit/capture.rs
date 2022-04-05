@@ -1,18 +1,10 @@
 use crate::circuit;
-//use crate::network::{CardData, Network, PictureFormat, Request};
-use crate::sensor;
 use async_trait::async_trait;
 use circuit::Circuit;
 use color_eyre::eyre::{eyre, Result};
-use sensor::servo::Servo;
 use std::sync::Arc;
-use tokio::net::ToSocketAddrs;
-use tokio::sync::watch;
 use tokio::sync::Notify;
-
-use tracing::instrument;
-use tracing::{debug, error, info};
-
+use tracing::{debug};
 use circuit::State;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -30,7 +22,6 @@ pub struct Capture {
     external_state: State,
     start_trigger: Arc<Notify>,
     end_trigger: Arc<Notify>,
-    servo: Servo,
     internal_state: InternalState,
 }
 
@@ -58,12 +49,15 @@ impl Circuit for Capture {
     }
 
     async fn run(&mut self) -> Result<()> {
+        debug!("capture {} has begun its run process.", self.get_id());
         match self.internal_state {
             InternalState::Waiting => {
                 if self.external_state == State::Running {
                     self.start_trigger.notified().await;
+                    debug!("capture {} has recieved its notification to begin.", self.get_id());
                     self.internal_state = InternalState::GetCard;
                 } else if self.external_state == State::Ending {
+                    debug!("capture {} has succesfully resolved an ending state transition.", self.get_id());
                     /*
                     We change the external state to waiting once we are back
                     at the beginning since a ending is recoverable and
@@ -87,7 +81,8 @@ impl Circuit for Capture {
             }
             InternalState::Stopped => {
                 return Err(eyre!(
-                    "progress circuit was meant to be stopped and should not have reached here."
+                    "capture {} circuit was meant to be stopped and should not have reached here."
+                , self.get_id()
                 ))
             }
         }
