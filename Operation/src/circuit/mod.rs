@@ -8,6 +8,8 @@ use tokio::{sync::watch, task::JoinHandle};
 use tokio_stream::StreamExt;
 use tracing::{info, debug, error};
 
+use crate::backbone::message::{OverseerChannel, Signal, SignalMessage};
+
 #[async_trait]
 pub trait Circuit {
     fn get_id(&self) -> u32;
@@ -34,6 +36,7 @@ pub enum Type {
 
 pub struct CircuitWatcher {
     current_state: State,
+    overseer_channel: OverseerChannel,
     watch_tx: watch::Sender<State>,
     sub_tasks: FuturesUnordered<JoinHandle<Result<()>>>,
 }
@@ -43,9 +46,10 @@ impl CircuitWatcher {
         self.sub_tasks.push(joinhandle);
     }
 
-    pub fn create(watch_tx: watch::Sender<State>) -> Self {
+    pub fn create(watch_tx: watch::Sender<State>, overseer_channel: OverseerChannel) -> Self {
         Self {
             current_state: State::Waiting,
+            overseer_channel,
             watch_tx,
             sub_tasks: FuturesUnordered::new(),
         }
@@ -72,8 +76,12 @@ impl CircuitWatcher {
                 },
             }
         }
-        debug!("Fell through, returning waiting.");
-        return State::Waiting;
+
+        if self.sub_tasks.is_empty() {
+            return State::Waiting;
+        } else {
+            return State::Running;
+        }
     }
 
     fn should_stop(state: State) -> bool {
@@ -89,20 +97,51 @@ impl CircuitWatcher {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        info!("Starting circuits.");
-        self.current_state = State::Running;
+        info!("Starting run method.");
+        self.current_state = State::Waiting;
         self.watch_tx.send(self.current_state)?;
 
-        info!("Began watching tasks.");
-        while CircuitWatcher::should_stop(self.current_state) {
+        info!("Began task loop, waiting responses.");
+        while CircuitWatcher::should_stop(self.current_state) == false {
+            debug!("start of circuit watcher loop");
             let result = self.process_tasks().await;
-            if self.current_state != State::Stop {
+            debug!("finished process tasks");
+            if self.current_state != State::Stop || self.current_state != State::Ending {
                 self.current_state = result;
             }
+
+            debug!("checking for oveerseer messages");
+            if let Ok(item) = self.overseer_channel.rx.try_recv() {
+                match item.signal {
+                    Signal::Kill => todo!(),
+                    Signal::Stop => {
+                        info!("stop command recieved from overseer.");
+                        self.current_state = State::Stop;
+                    },
+                    Signal::Start | Signal::Resume => {
+                        if CircuitWatcher::should_stop(self.current_state) {
+                            info!("Start request ignored since circuit watcher is stopping/ending.");
+                        } else {
+                            self.current_state = State::Running;
+                        }
+                    },
+                    Signal::Pause => {
+                        if CircuitWatcher::should_stop(self.current_state) {
+                            info!("Pause request ignore since circuit watcher is stopping/ending.");
+                        } else {
+                            self.current_state = State::Waiting;
+                        }
+                    },
+                    Signal::HeartBeat => {},
+                    Signal::Ack => {},
+                }
+                self.overseer_channel.acknowledge().await?
+            }
+            debug!("send state to circuits");
             self.watch_tx.send(self.current_state)?;
         }
 
-        info!("Task loop has been broken, beginning clean up.");
+        info!("Task loop has been broken ({:?}), beginning clean up.", self.current_state);
         match self.current_state {
             State::Waiting | State::Running => {},
             State::Stop => {
