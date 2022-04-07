@@ -109,7 +109,7 @@ pub async fn generate_circuits(
     let feeder_end = Arc::new(Notify::new());
     let feeder = generate_feeder(1, system, end_notifacation.clone(), feeder_end.clone()).await?;
     watcher.add_join_handle(start_task(feeder, rx.clone()));
-    let capture = generate_feeder(2, system, feeder_end, end_notifacation).await?;
+    let capture = generate_capture(2, system, feeder_end, end_notifacation).await?;
     watcher.add_join_handle(start_task(capture, rx.clone()));
     // list of circuits to construct
 
