@@ -1,11 +1,11 @@
 use crate::{
     backbone::{message::OverseerChannel},
-    circuit::feeder::Feeder,
+    circuit::{feeder::Feeder, capture::Capture},
     factory::System,
     sensor::{motor_controller::MotorController},
 };
 use std::sync::Arc;
-use tracing::{info};
+use tracing::{info, debug};
 use crate::circuit::{Circuit, circuitwatcher::CircuitWatcher, State};
 use color_eyre::eyre::{eyre, Result};
 use tokio::{
@@ -33,6 +33,7 @@ pub fn start_task(
                 State::Ending => {
                     circuit.run().await?;
                     if circuit.get_state() == State::Waiting {
+                        debug!("Circuit {} has succesfully ended.", circuit.get_id());
                         break;
                     }
                     Ok(())
@@ -78,8 +79,19 @@ pub async fn generate_feeder(
     )))
 }
 
-pub async fn generate_capture() -> Result<()> {
-    Ok(())
+pub async fn generate_capture(
+    id: u32,
+    system: &mut System,
+    start_trigger: Arc<Notify>,
+    end_trigger: Arc<Notify>,
+) -> Result<Box<dyn Circuit + Send>> {
+
+    Ok(Box::new(Capture::create(
+        id,
+        State::Waiting,
+        start_trigger,
+        end_trigger,
+    )))
 }
 
 pub async fn generat_distributor() -> Result<()> {
@@ -92,13 +104,13 @@ pub async fn generate_circuits(
 ) -> Result<CircuitWatcher> {
     let (tx, rx) = watch::channel(State::Waiting);
     let mut watcher = CircuitWatcher::create(tx, overseer_channel);
-    let feeder_id: u32 = 1;
-    let feeder_start = Arc::new(Notify::new());
-    feeder_start.notify_one();
-    //let feeder_end = Arc::new(Notify::new());
-    let feeder_end = feeder_start.clone();
-    let feeder = generate_feeder(feeder_id, system, feeder_start, feeder_end).await?;
-    watcher.add_join_handle(start_task(feeder, rx));
+    let end_notifacation = Arc::new(Notify::new());
+    end_notifacation.notify_one();
+    let feeder_end = Arc::new(Notify::new());
+    let feeder = generate_feeder(1, system, end_notifacation.clone(), feeder_end.clone()).await?;
+    watcher.add_join_handle(start_task(feeder, rx.clone()));
+    let capture = generate_feeder(2, system, feeder_end, end_notifacation).await?;
+    watcher.add_join_handle(start_task(capture, rx.clone()));
     // list of circuits to construct
 
     // go through each item and try and construct each circuit

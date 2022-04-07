@@ -62,6 +62,7 @@ impl Circuit for Feeder {
     }
 
     async fn stop(&mut self) -> Result<()> {
+        debug!("Feeder {} has called stop.", self.get_id());
         self.motor_cont.set(Motor::A, Movement::Stop).await?;
         self.internal_state = InternalState::Stopped;
         Ok(())
@@ -72,24 +73,24 @@ impl Circuit for Feeder {
     }
 
     async fn run(&mut self) -> Result<()> {
-        debug!("Feeder {} run process started", self.get_id());
         match self.internal_state {
             InternalState::Waiting => {
                 if self.external_state == State::Running {
                     self.start_trigger.notified().await;
                     self.internal_state = InternalState::MotorOn;
-                    debug!("Feeder circuit has been notified");
+                    debug!("Feeder {} circuit has been notified", self.get_id());
                 } else if self.external_state == State::Ending {
                     /*
                     We change the external state to waiting once we are back
                     at the beginning since a ending is recoverable and
                     acts as a notification back out to the task above.
                     */
+                    debug!("Feeder {} circuit has been ended succesfully", self.get_id());
                     self.external_state = State::Waiting;
                 }
             }
             InternalState::MotorOn => {
-                debug!("Feeder circuit turning motor on");
+                debug!("Feeder {} circuit turning motor on", self.get_id());
                 self.motor_cont.set(Motor::A, Movement::Forward).await?;
                 self.internal_state = InternalState::WaitingForTrigger;
                 // Artifical sleep for testing.
@@ -97,14 +98,14 @@ impl Circuit for Feeder {
             }
             InternalState::WaitingForTrigger => {
                 // add stop trigger
-                debug!("Feeder circuit turning motor off");
+                debug!("Feeder {} circuit turning motor off", self.get_id());
                 self.motor_cont.set(Motor::A, Movement::Stop).await?;
                 self.internal_state = InternalState::Waiting;
                 self.end_trigger.notify_one();
                 tokio::time::sleep(std::time::Duration::from_secs(2)).await;
             }
             InternalState::Stopped => {
-                debug!("Feeder circuit stopping");
+                debug!("Feeder {} circuit stopping", self.get_id());
                 return Err(eyre!(
                     "progress circuit was meant to be stopped and should not have reached here."
                 ));
