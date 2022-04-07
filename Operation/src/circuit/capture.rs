@@ -25,6 +25,23 @@ pub struct Capture {
     internal_state: InternalState,
 }
 
+impl Capture {
+    pub fn create(
+        id: u32,
+        external_state: State,
+        start_trigger: Arc<Notify>,
+        end_trigger: Arc<Notify>,
+    ) -> Self {
+        Self {
+            id,
+            external_state,
+            start_trigger,
+            end_trigger,
+            internal_state: InternalState::Waiting,
+        }
+    }
+}
+
 #[async_trait]
 impl Circuit for Capture {
     fn get_id(&self) -> u32 {
