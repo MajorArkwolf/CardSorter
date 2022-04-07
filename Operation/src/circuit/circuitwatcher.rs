@@ -153,10 +153,13 @@ impl CircuitWatcher {
 
             if let Ok(item) = self.overseer_channel.rx.try_recv() {
                 match item.signal {
-                    Signal::Kill => todo!(),
+                    Signal::Kill => {
+                        info!("kill command recieved from overseer.");
+                        state = State::Stop;
+                    },
                     Signal::Stop => {
                         info!("stop command recieved from overseer.");
-                        state = State::Stop;
+                        state = State::Ending;
                     },
                     Signal::Start | Signal::Resume => {
                         if CircuitWatcher::should_stop(state) {
@@ -214,7 +217,17 @@ impl CircuitWatcher {
             },
             State::Ending => {
                 self.watch_tx.send(state)?;
-                while !self.sub_tasks.is_empty() {}
+                while let Some(task) = self.sub_tasks.next().await {
+                    match task {
+                        Ok(v) => {
+                            match v {
+                                Ok(_) => {},
+                                Err(err) => error!("error returned when joining background tasks inside of circuitwathcer. {0}", err),
+                            }
+                        },
+                        Err(err) => return Err(eyre!("Failed to rejoin background task inside of circuitwatcher during a ending signal. {0}", err)),
+                    }
+                }
                 debug!("Background task rejoined.");
             },
         }
