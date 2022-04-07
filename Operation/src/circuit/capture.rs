@@ -10,6 +10,7 @@ use circuit::State;
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum InternalState {
     Waiting,
+    Processing,
     GetCard,
     ScanCard,
     MoveCardOn,
@@ -66,11 +67,14 @@ impl Circuit for Capture {
     }
 
     async fn run(&mut self) -> Result<()> {
-        debug!("capture {} has begun its run process.", self.get_id());
         match self.internal_state {
             InternalState::Waiting => {
+                self.start_trigger.notified().await;
+                debug!("capture {} has recieved its notification to begin.", self.get_id());
+                self.internal_state = InternalState::Processing;
+            }
+            InternalState::Processing => {
                 if self.external_state == State::Running {
-                    self.start_trigger.notified().await;
                     debug!("capture {} has recieved its notification to begin.", self.get_id());
                     self.internal_state = InternalState::GetCard;
                 } else if self.external_state == State::Ending {
@@ -80,18 +84,22 @@ impl Circuit for Capture {
                     at the beginning since a ending is recoverable and
                     acts as a notification back out to the task above.
                     */
+                    self.end_trigger.notify_one();
                     self.external_state = State::Waiting;
                 }
             }
             InternalState::GetCard => {
+                debug!("capture {0} transitioned into getcard state", self.get_id());
                 // move card into position
                 self.internal_state = InternalState::ScanCard;
             }
             InternalState::ScanCard => {
+                debug!("capture {0} transitioned into scancard state", self.get_id());
                 // scan card and send to OCR
                 self.internal_state = InternalState::MoveCardOn;
             }
             InternalState::MoveCardOn => {
+                debug!("capture {0} transitioned into movecardon state", self.get_id());
                 // Make sure distributor has card.
                 self.internal_state = InternalState::Waiting;
                 self.end_trigger.notify_one();

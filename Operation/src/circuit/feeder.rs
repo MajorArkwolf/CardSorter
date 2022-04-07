@@ -14,6 +14,7 @@ use circuit::State;
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum InternalState {
     Waiting,
+    Processing,
     MotorOn,
     WaitingForTrigger,
     Stopped,
@@ -75,16 +76,21 @@ impl Circuit for Feeder {
     async fn run(&mut self) -> Result<()> {
         match self.internal_state {
             InternalState::Waiting => {
+                self.start_trigger.notified().await;
+                debug!("Feeder {} circuit has been notified", self.get_id());
+                self.internal_state = InternalState::Processing;
+            }
+            InternalState::Processing => {                
                 if self.external_state == State::Running {
-                    self.start_trigger.notified().await;
+                    debug!("Feeder {} circuit has been transitioned to motor on", self.get_id());
                     self.internal_state = InternalState::MotorOn;
-                    debug!("Feeder {} circuit has been notified", self.get_id());
                 } else if self.external_state == State::Ending {
                     /*
                     We change the external state to waiting once we are back
                     at the beginning since a ending is recoverable and
                     acts as a notification back out to the task above.
                     */
+                    self.end_trigger.notify_one();
                     debug!("Feeder {} circuit has been ended succesfully", self.get_id());
                     self.external_state = State::Waiting;
                 }
