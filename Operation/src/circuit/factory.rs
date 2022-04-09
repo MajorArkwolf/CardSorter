@@ -81,7 +81,7 @@ pub async fn generate_feeder(
 
 pub async fn generate_capture(
     id: u32,
-    system: &mut System,
+    _system: &mut System,
     start_trigger: Arc<Notify>,
     end_trigger: Arc<Notify>,
 ) -> Result<Box<dyn Circuit + Send>> {
