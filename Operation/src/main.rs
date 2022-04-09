@@ -11,6 +11,14 @@ use tokio::task::JoinHandle;
 use tracing::{debug, info};
 use tokio_stream::StreamExt;
 use color_eyre::eyre::{eyre, Result};
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    #[clap(short, long)]
+    version: String,
+}
 
 use crate::backbone::overseer::Overseer;
 //use std::time::{Duration, Instant};
@@ -18,6 +26,10 @@ use crate::backbone::overseer::Overseer;
 async fn main() -> Result<()> {
     color_eyre::install()?;
     tracing_subscriber::fmt::init();
+
+    let args = Args::parse();
+
+
     //console_subscriber::init();
     info!("System startup initiated");
     let mut overseer = Overseer::create();
