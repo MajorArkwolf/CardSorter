@@ -8,8 +8,7 @@ pub enum State {
 }
 
 pub trait Scanner {
-    fn setup(&mut self) -> Result<()>;
     fn shutdown(&mut self) -> Result<()>;
-    fn read(&mut self);
+    fn read(&mut self) -> Result<image::DynamicImage>;
     fn status(&mut self) -> Result<()>;
 }
